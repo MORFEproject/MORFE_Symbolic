@@ -1,0 +1,20 @@
+résultat calcul forme normale jusqu'à l'ordre 11
+19 janvier 2023
+MORFE_SYM under dev
+à partir de l'ordre 7 ça ne colle plus avec le résultat de CHL...
+
+NB :  1 minutes de calcul + 19 minutes pour produire la sortie lisible
+sur mon portable.
+
+
+RHS dynamics whose LHS is zₜ=[∂z₁/∂t  ∂z₂/∂t  ... ]
+Sym[438825*I*h^5*z1^6*z2^5/(2048*ω1^9) - 47505*I*h^4*z1^5*z2^4/(1024*ω1^7) + 1419*I*h^3*z1^4*z2^3/(128*ω1^5) - 51*I*h^2*z1^3*z2^2/(16*ω1^3) + 3*I*h*z1^2*z2/(2*ω1) + I*z1*ω1, -438825*I*h^5*z1^5*z2^6/(2048*ω1^9) + 47505*I*h^4*z1^4*z2^5/(1024*ω1^7) - 1419*I*h^3*z1^3*z2^4/(128*ω1^5) + 51*I*h^2*z1^2*z2^3/(16*ω1^3) - 3*I*h*z1*z2^2/(2*ω1) - I*z2*ω1]
+
+----------
+** RNF up to order 9 
+-------------
+
+RHS dynamics whose LHS is zₜ=[∂z₁/∂t  ∂z₂/∂t  ... ]
+Sym[-3873*I*h^4*z1^5*z2^4/(1024*ω1^7) + 1977*I*h^4*z1^4*z2^5/(1024*ω1^7) + 267*I*h^3*z1^4*z2^3/(128*ω1^5) - 3*I*h^3*z1^3*z2^4/(128*ω1^5) - 15*I*h^2*z1^3*z2^2/(16*ω1^3) - 3*I*h^2*z1^2*z2^3/(8*ω1^3) + 3*I*h*z1^2*z2/(2*ω1) + 3*I*h*z1*z2^2/(2*ω1) + I*z1*ω1, -1977*I*h^4*z1^5*z2^4/(1024*ω1^7) + 3873*I*h^4*z1^4*z2^5/(1024*ω1^7) + 3*I*h^3*z1^4*z2^3/(128*ω1^5) - 267*I*h^3*z1^3*z2^4/(128*ω1^5) + 3*I*h^2*z1^3*z2^2/(8*ω1^3) + 15*I*h^2*z1^2*z2^3/(16*ω1^3) - 3*I*h*z1^2*z2/(2*ω1) - 3*I*h*z1*z2^2/(2*ω1) - I*z2*ω1]
+
+
