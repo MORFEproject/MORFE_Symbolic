@@ -476,4 +476,4 @@ for i_ord=1:length(DP.f[1,:])
     end
 end
 
-reduced_dynamics_latex_output(zₜ, "Duffing_cubic_conservative_unforced_CNF_output.txt")
+reduced_dynamics_latex_output(zₜ, "./test/Duffing_cubic_conservative_unforced_CNF_output.txt")
