@@ -12,7 +12,7 @@ module MORFE_Symbolic
     export parametrisation_struct,init_parametrisation_struct
     export fill_RHS_quad!,fill_RHS_dyn!,fill_RHS_lin!
     export compute_order_zero,generalised_eigenproblem,solve_homological!    
-
+    export reduced_dynamics_latex_output
     
     #~~~~~~~~~~~~~~~~~#
     #           generic vectors       #
@@ -439,6 +439,82 @@ module MORFE_Symbolic
         end
     end
 
+    """
+    Auxiliary function to transform a given polynomial expression in its latex code. Input arguments are:
+        - vars: A symbolic vector containing the variables of the polynomial expression.
+        - expr_coeff: The polynomial coefficients.
+        - expr_monoms: A vector of tuples with each monom's exponents.
+        - latex_output: The string to which the latex code is appended.
+    This function is primarely intended for use inside the module, and not for exportation.
+    """
+    function latex_code_for_polynomial_expression(vars::Vector{Sym}, expr_coeffs::Vector{Sym}, expr_monoms, latex_output::String)
+        negative_coeff = sympy.core.function._coeff_isneg
+
+        for j in reverse(eachindex(expr_coeffs))
+            sign_flag = false
+            monom = prod(vars .^ expr_monoms[j])
+            if expr_coeffs[j].has(Sym(im))
+                if negative_coeff(expr_coeffs[j])
+                    expr_coeffs[j] = sympy.Mul(Sym(im), -expr_coeffs[j]/im, evaluate=False)
+                    sign_flag = true
+                    # This sign flag is used as a way to make the i stay outside of fraction numerators
+                else
+                    expr_coeffs[j] = sympy.Mul(Sym(im), expr_coeffs[j]/im, evaluate=False)
+                end 
+            end
+            # In the next lines the Sym("a") is necessary so that -i is not displayed as \left( -i \right)
+            if sign_flag
+                latex_result = " -"*latexify(Sym("a") + expr_coeffs[j], cdot = false)[5:end-1] *' '* latexify(monom, cdot = false)[2:end-1]
+            else
+                latex_result = latexify(Sym("a") + expr_coeffs[j], cdot = false)[3:end-1] *' '* latexify(monom, cdot = false)[2:end-1]
+            end
+            if j == length(expr_coeffs) && !sign_flag
+                latex_output *= latex_result[3:end]
+            else
+                latex_output *= latex_result
+            end
+        end
+        return latex_output
+    end
+
+    """
+    Function to output the reduced dynamics on latex format. Input arguments are:
+        - zₜ: The reduced dynamics. A vector of symbolic expressions.
+        - output_file: A file to output the results. If it is not passed, results are displayed
+                       on the terminal.
+        - file_mode: The opening mode of the file. If "a", the output is appended at the end.
+                     If "w" overwrites existing files with the same name.
+    """
+    function reduced_dynamics_latex_output(zₜ::Vector{Sym}, output_file = nothing, file_mode::String)
+        poly_from_expr = sympy.polys.polytools.poly_from_expr
+
+        z = Sym[]
+        for i = 1:length(zₜ)
+            push!(z, Sym("z_$(i)"))
+        end
+        
+        latex_output = "\\begin{align}"
+        for i in eachindex(zₜ)
+            expr = poly_from_expr(zₜ[i], gens = z)
+            expr_monoms = expr[1].monoms()
+            expr_coeffs = expr[1].coeffs()
+            latex_output *= "\n\\dot{z}_{$(i)} &="
+            latex_output = latex_code_for_polynomial_expression(z, expr_coeffs, expr_monoms, latex_output)
+            latex_output *= "\\\\"
+        end
+        latex_output = replace(latex_output, "I" => "\\mathit{i}")
+        latex_output = latex_output[1:end-2] * "\n\\end{align}"
+        
+        if output_file === nothing
+            println("RHS dynamics whose LHS is zₜ=[∂z₁/∂t  ∂z₂/∂t  ... ]")
+            println(latex_output)
+        else
+            open(output_file, file_mode) do file
+                write(file, "RHS dynamics whose LHS is zₜ=[∂z₁/∂t  ∂z₂/∂t  ... ]\n")
+                write(file, latex_output)
+            end 
+        end 
+    end
 end
 
 
