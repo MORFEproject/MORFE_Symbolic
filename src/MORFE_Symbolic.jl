@@ -3,6 +3,7 @@ module MORFE_Symbolic
     using SymPy
     using Combinatorics
     using LinearAlgebra
+    using Latexify
     
     export create_gen_vec,create_pos_vec
     export mysimp,mysub
@@ -20,7 +21,7 @@ module MORFE_Symbolic
     function create_gen_vec(str,n)
         z = sympy.zeros(n,1)[:,1]
         for i = 1:n
-            z[i] = symbols(str*string(i))
+            z[i] = symbols(str*'_'*string(i))
         end
         return z
     end
@@ -28,7 +29,7 @@ module MORFE_Symbolic
     function create_pos_vec(str,n)
         z = sympy.zeros(n,1)[:,1]
         for i = 1:n
-            z[i] = symbols(str*string(i),positive = true)
+            z[i] = symbols(str*'_'*string(i),positive = true)
         end
         return z
     end
