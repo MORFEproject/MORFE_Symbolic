@@ -485,7 +485,7 @@ module MORFE_Symbolic
         - file_mode: The opening mode of the file. If "a", the output is appended at the end.
                      If "w" overwrites existing files with the same name.
     """
-    function reduced_dynamics_latex_output(zₜ::Vector{Sym}, output_file = nothing, file_mode::String)
+    function reduced_dynamics_latex_output(zₜ::Vector{Sym}, output_file = nothing, file_mode::String = "a")
         poly_from_expr = sympy.polys.polytools.poly_from_expr
 
         z = Sym[]
