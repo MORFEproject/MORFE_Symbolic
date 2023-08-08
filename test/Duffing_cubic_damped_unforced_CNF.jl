@@ -179,7 +179,7 @@ n_nonaut = 0
 n_rom = n_aut + n_nonaut
 #
 # order of the expansion
-o = 5
+o = 3
 #
 # initialise aexp
 # this is a structure containing information about all the sets
@@ -464,7 +464,7 @@ println("nonlinear term f such that ∂ₜz2 = [..] + f*z1*z2^2")
 println(mysub(mysub(mysub([DP.f[1,8]],DP.subs[end:-1:1]), [Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc]), [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]))
 =#
 
-z1=Sym("z1");z2=Sym("z2")
+z1=Sym("z_1");z2=Sym("z_2")
 zₜ=sympy.zeros(n_aut,1)[:,1]
 for i_ord=1:length(DP.f[1,:])
     for i_var=1:n_aut
@@ -473,4 +473,4 @@ for i_ord=1:length(DP.f[1,:])
 end
 
 println("RHS dynamics whose LHS is zₜ=[∂z₁/∂t  ∂z₂/∂t  ... ]")
-println(zₜ)
+reduced_dynamics_latex_output(zₜ, "./test/Duffing_cubic_damped_unforced_CNF_output.txt")

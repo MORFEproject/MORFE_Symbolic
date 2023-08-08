@@ -59,7 +59,7 @@ M = diagm(sympy.ones(n_osc,1)[:,1])
 #
 # or simply define a diagonal matrix with entries ωⱼ^2:
 n_osc = size(M)[1]
-ω=create_pos_vec("ω",n_osc)
+ω = create_pos_vec("ω",n_osc)
 K = diagm(ω.^2)
 #
 # if nonconservative
@@ -70,20 +70,20 @@ K = diagm(ω.^2)
 #
 # or simply create a diagonalised damping matrix
 # generic diagonal damping:
-ξ=create_pos_vec("ξ",n_osc)
+ξ = create_pos_vec("ξ",n_osc)
 ζ = 2*ξ.*ω
 C = diagm(ζ)
 # for the sake of readability, it is useful to specify that each oscillator is underdamped
 # which means that the quantity   δⱼ := √(1-ξⱼ^2) is positive
 # definition of δ = √(1-ξ.^2) will be used later for simplification
-δ=create_pos_vec("δ",n_osc)
+δ = create_pos_vec("δ",n_osc)
 
 # the total size of the DAE system will be 
 # the size of the oscillatory system in first order form (2*n_osc)
 # plus the number of algebraic equations needed for the quadratic recast
 # is n_osc = 1 and the nonlinearity is cubic, 
 # only one auxiliary variable is needed (R₁ = U₁^2)
-n_aux=1
+n_aux = 1
 n_full = 2*n_osc+n_aux
 
 # define the LHS as a function LHS_Lin(Yₜ)
@@ -304,7 +304,7 @@ end
 # then the matrix ∇Q0 is extracted
 ∇Q0 = extract_Lin(∇Q0_fun,n_full)
 # finally the linear RHS matrix B is updated by adding ∇Q0
-sys.B+= ∇Q0
+sys.B += ∇Q0
 # ATTENTION: if the original B matrix is needed,
 # it has to be saved before its update because it is no longer in sys
 
@@ -343,8 +343,8 @@ sys.B+= ∇Q0
 yR = YR[:,n_aux+2:-1:n_aux+1] #OK
 yL = YL[:,n_aux+2:-1:n_aux+1] #OK
 #test normalisation - a revoir // tester //OK this is the good one !
-yR[:,1]=-yR[:,1]/(1/ω[1])/im
-yR[:,2]=yR[:,2]/(1/ω[1])/im
+yR[:,1] = -yR[:,1]/(1/ω[1])/im
+yR[:,2] = yR[:,2]/(1/ω[1])/im
 
 #λ = Λ[n_aux+1:n_aux+2]
 λ = Λ[n_aux+2:-1:n_aux+1] #to test !!
@@ -461,7 +461,7 @@ println("nonlinear term f such that ∂ₜz2 = [..] + f*z1*z2^2")
 println(mysub(mysub(mysub([DP.f[1,8]],DP.subs[end:-1:1]), [Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc]), [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]))
 =#
 
-z1=Sym("z1");z2=Sym("z2")
+z1=Sym("z_1");z2=Sym("z_2")
 zₜ=sympy.zeros(n_aut,1)[:,1]
 for i_ord=1:length(DP.f[1,:])
     for i_var=1:n_aut
@@ -470,4 +470,4 @@ for i_ord=1:length(DP.f[1,:])
 end
 
 println("RHS dynamics whose LHS is zₜ=[∂z₁/∂t  ∂z₂/∂t  ... ]")
-println(zₜ)
+reduced_dynamics_latex_output(zₜ, "./test/Duffing_cubic_damped_unforced_RNF_output.txt")

@@ -1,0 +1,7 @@
+RHS dynamics whose LHS is zₜ=[∂z₁/∂t  ∂z₂/∂t  ... ]
+\begin{align}
+\dot{z}_{1} &= \left( \mathit{i} \delta_{1} \omega_{1} - \xi_{1} \omega_{1} \right) z_{1} + \mathit{i} \frac{3 h}{2 \delta_{1} \omega_{1}} z_{1}^{2} z_{2}\\
+\dot{z}_{2} &= - \left( \mathit{i} \delta_{1} \omega_{1} + \xi_{1} \omega_{1} \right) z_{2} - \mathit{i} \frac{3 h}{2 \delta_{1} \omega_{1}} z_{1} z_{2}^{2}\\
+\dot{z}_{3} &= \mathit{i} \Omega z_{3}\\
+\dot{z}_{4} &= - \mathit{i} \Omega z_{4}
+\end{align}
