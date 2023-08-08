@@ -440,6 +440,41 @@ module MORFE_Symbolic
     end
 
     """
+    Auxiliary function for latex printing. Creates non commutative monoms so that they stay in
+    the correct order when printing.
+    This function is primarely intended for use inside the module, and not for exportation.
+    """
+    function non_commutative_monoms_for_latex_expressions(monom_number, monoms_exponents, vars)
+        monom_string = ""
+        for i = 1:length(vars)
+            exp = monoms_exponents[monom_number][i]
+            if exp != 0
+                if exp == 1
+                    monom_string *= "z_$(i)*"
+                else
+                    monom_string *= "z_$(i)^$(exp)*"
+                end
+            end
+        end
+        return sympy.Symbol(monom_string[1:end-1], commutative=False)
+    end
+
+    """
+    Checks whether all of the terms in a sum have negative coefficients.
+    This function is primarely intended for use inside the module, and not for exportation.
+    """
+    function all_negative_coeffs(expression)
+        if expression.func == sympy.core.add.Add
+            for arg in expression.args
+                !sympy.core.function._coeff_isneg(arg) && return false
+            end
+        else
+            !sympy.core.function._coeff_isneg(expression) && return false
+        end
+        return true
+    end
+
+    """
     Auxiliary function to transform a given polynomial expression in its latex code. Input arguments are:
         - vars: A symbolic vector containing the variables of the polynomial expression.
         - expr_coeff: The polynomial coefficients.
@@ -448,25 +483,22 @@ module MORFE_Symbolic
     This function is primarely intended for use inside the module, and not for exportation.
     """
     function latex_code_for_polynomial_expression(vars::Vector{Sym}, expr_coeffs::Vector{Sym}, expr_monoms, latex_output::String)
-        negative_coeff = sympy.core.function._coeff_isneg
-
         for j in reverse(eachindex(expr_coeffs))
             sign_flag = false
-            monom = prod(vars .^ expr_monoms[j])
-            if expr_coeffs[j].has(Sym(im))
-                if negative_coeff(expr_coeffs[j])
-                    expr_coeffs[j] = sympy.Mul(Sym(im), -expr_coeffs[j]/im, evaluate=False)
-                    sign_flag = true
-                    # This sign flag is used as a way to make the i stay outside of fraction numerators
-                else
-                    expr_coeffs[j] = sympy.Mul(Sym(im), expr_coeffs[j]/im, evaluate=False)
-                end 
+            monom = non_commutative_monoms_for_latex_expressions(j, expr_monoms, vars)
+            # This sign flag is used as a way to make the i stay outside of fraction numerators
+            if all_negative_coeffs(expr_coeffs[j])
+                expr_coeffs[j] = -expr_coeffs[j]
+                sign_flag = true
+            end
+            if !(expr_coeffs[j]/im).has(Sym(im))
+                expr_coeffs[j] = sympy.Mul(Sym(im), expr_coeffs[j]/im, evaluate=False)
             end
             # In the next lines the Sym("a") is necessary so that -i is not displayed as \left( -i \right)
             if sign_flag
-                latex_result = " -"*latexify(Sym("a") + expr_coeffs[j], cdot = false)[5:end-1] *' '* latexify(monom, cdot = false)[2:end-1]
+                latex_result = " -"*latexify(sympy.Add(Sym("a"), sympy.Mul(expr_coeffs[j], monom, evaluate=False), evaluate=False), cdot = false)[5:end-1]
             else
-                latex_result = latexify(Sym("a") + expr_coeffs[j], cdot = false)[3:end-1] *' '* latexify(monom, cdot = false)[2:end-1]
+                latex_result = latexify(sympy.Add(Sym("a"), sympy.Mul(expr_coeffs[j], monom, evaluate=False), evaluate=False), cdot = false)[3:end-1]
             end
             if j == length(expr_coeffs) && !sign_flag
                 latex_output *= latex_result[3:end]
