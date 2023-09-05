@@ -59,7 +59,7 @@ M = diagm(sympy.ones(n_osc,1)[:,1])
 #
 # or simply define a diagonal matrix with entries ωⱼ^2:
 n_osc = size(M)[1]
-ω=create_pos_vec("ω",n_osc)
+ω = create_pos_vec("ω",n_osc)
 K = diagm(ω.^2)
 #
 # if nonconservative
@@ -70,7 +70,7 @@ K = diagm(ω.^2)
 #
 # or simply create a diagonalised damping matrix
 # generic diagonal damping:
-ξ=create_pos_vec("ξ",n_osc)
+ξ = create_pos_vec("ξ",n_osc)
 ζ = 2*ξ.*ω
 C = diagm(ζ)
 # for the sake of readability, it is useful to specify that each oscillator is underdamped
@@ -179,7 +179,7 @@ n_nonaut = 0
 n_rom = n_aut + n_nonaut
 #
 # order of the expansion
-o = 3
+o = 5
 #
 # initialise aexp
 # this is a structure containing information about all the sets
@@ -216,7 +216,7 @@ DP = init_parametrisation_struct(n_full,n_rom,aexp.n_sets,n_aut)
 
 # resonance conditions:
 # create a generic λ₀ vector (n_rom×1) 
-λ₀ = create_gen_vec("λ₀",n_rom)
+λ₀ = create_gen_vec("λ",n_rom)
 # the first n_aut entries of λ₀ represent the master eigenvalues that will be chosen later
 # remember to keep the same order here and there
 # which means that if here two consecutive entries represent a pair, also later they must
@@ -228,6 +228,7 @@ DP = init_parametrisation_struct(n_full,n_rom,aexp.n_sets,n_aut)
 conditions = [λ₀[2] =>-λ₀[1]]
 
 σ₀ = transpose(aexp.mat)*λ₀
+#DP.σ[1,:] = σ₀
 
 style = "CNF"
 
@@ -376,8 +377,8 @@ for ind_set1 = 1:n_aut
     end
     # assign the chosen master eigenvalue to the corresponding DP.f
     DP.f[ind_set1,ind_setG1] = λ[ind_set1]
-    DP.fs[ind_set1,ind_setG1] = Sym("λ"*string(ind_set1))
-    DP.subs = [DP.subs;Dict(Sym("λ"*string(ind_set1))=>λ[ind_set1])]
+    DP.fs[ind_set1,ind_setG1] = Sym("λ_"*string(ind_set1))
+    DP.subs = [DP.subs;Dict(Sym("λ_"*string(ind_set1))=>λ[ind_set1])]
     # compute the matrix A*yR[aut]
     # which will be used for the top right border of the homological matrix
     yRs = 0*yR[:,ind_set1]
@@ -464,13 +465,6 @@ println("nonlinear term f such that ∂ₜz2 = [..] + f*z1*z2^2")
 println(mysub(mysub(mysub([DP.f[1,8]],DP.subs[end:-1:1]), [Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc]), [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]))
 =#
 
-z1=Sym("z_1");z2=Sym("z_2")
-zₜ=sympy.zeros(n_aut,1)[:,1]
-for i_ord=1:length(DP.f[1,:])
-    for i_var=1:n_aut
-        zₜ[i_var:i_var]+=mysub(mysub(mysub([DP.f[i_var,i_ord]],DP.subs[end:-1:1]), [Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc]), [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc])*z1^aexp.mat[1,i_ord]*z2^aexp.mat[2,i_ord]
-    end
-end
-
-println("RHS dynamics whose LHS is zₜ=[∂z₁/∂t  ∂z₂/∂t  ... ]")
-reduced_dynamics_latex_output(zₜ, "./test/Duffing_cubic_damped_unforced_CNF_output.txt")
+substitutions = [[Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc], [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]]
+reduced_dynamics_latex_output(DP, aexp, substitutions, "./test/Duffing_cubic_damped_unforced_CNF_output.txt")
+nonlinear_mappings_latex_output(DP, aexp, substitutions, "./test/Duffing_cubic_damped_unforced_CNF_output.txt")
