@@ -299,7 +299,7 @@ module MORFE_Symbolic
         # LHS_dyn(e_s - e_s + set_current) = A*W(e_s)*f(s,set_current))
         #
         # here I only take the inner ones:
-        part = part[2:end-1][:]   
+        part = part[2:end-1][:] # IS THIS RIGHT?
         # NB for forced this has to change! 
         # f^{s}_{s+nA} with  s \in nA is nonzero but ...
         # the p-mapping W is still known from previous calculations of the automonous

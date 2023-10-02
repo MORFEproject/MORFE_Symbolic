@@ -375,8 +375,8 @@ for ind_set1 = 1:n_aut
     end
     # assign the chosen master eigenvalue to the corresponding DP.f
     DP.f[ind_set1,ind_setG1] = λ[ind_set1]
-    DP.fs[ind_set1,ind_setG1] = Sym("λ"*string(ind_set1))
-    DP.subs = [DP.subs;Dict(Sym("λ"*string(ind_set1))=>λ[ind_set1])]
+    DP.fs[ind_set1,ind_setG1] = Sym("λ_"*string(ind_set1))
+    DP.subs = [DP.subs;Dict(Sym("λ_"*string(ind_set1))=>λ[ind_set1])]
     # compute the matrix A*yR[aut]
     # which will be used for the top right border of the homological matrix
     yRs = 0*yR[:,ind_set1]
@@ -399,8 +399,9 @@ for ind_set1 = 1:n_aut
     DP.YLᵀA[ind_set1,:] = yLsᵀ*sys.A    #transpose(yL[:,ind_set1])*sys.A    
 end
 
-
-
+if n_nonaut == 0
+    DP.σ = transpose(λ)*aexp.mat
+end
 
 #~~~~~~~~~~~~~~~~~#
 #           Order 1                  #
@@ -436,10 +437,6 @@ if n_nonaut>0
         println(aexp.mat[:,ind_setG1_nonaut])
         solve_homological!(ind_setG1_nonaut,DP,aexp,sys)
     end
-else
-    λ = reshape(λ,1,n_rom)
-    # calculate σ and assign it to DP:
-    DP.σ = λ*aexp.mat
 end
 
 #~~~~~~~~~~~~~~~~~#

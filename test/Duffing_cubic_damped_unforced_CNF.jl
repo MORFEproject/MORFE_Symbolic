@@ -76,15 +76,15 @@ C = diagm(ζ)
 # for the sake of readability, it is useful to specify that each oscillator is underdamped
 # which means that the quantity   δⱼ := √(1-ξⱼ^2) is positive
 # definition of δ = √(1-ξ.^2) will be used later for simplification
-δ=create_pos_vec("δ",n_osc)
+δ = create_pos_vec("δ",n_osc)
 
 # the total size of the DAE system will be 
 # the size of the oscillatory system in first order form (2*n_osc)
 # plus the number of algebraic equations needed for the quadratic recast
 # is n_osc = 1 and the nonlinearity is cubic, 
 # only one auxiliary variable is needed (R₁ = U₁^2)
-n_aux=1
-n_full = 2*n_osc+n_aux
+n_aux = 1
+n_full = 2*n_osc + n_aux
 
 # define the LHS as a function LHS_Lin(Yₜ)
 # the matrix A such that LHS_Lin(Yₜ) = A.Yₜ
@@ -228,7 +228,6 @@ DP = init_parametrisation_struct(n_full,n_rom,aexp.n_sets,n_aut)
 conditions = [λ₀[2] =>-λ₀[1]]
 
 σ₀ = transpose(aexp.mat)*λ₀
-#DP.σ[1,:] = σ₀
 
 style = "CNF"
 
@@ -401,8 +400,9 @@ for ind_set1 = 1:n_aut
     DP.YLᵀA[ind_set1,:] = yLsᵀ*sys.A    #transpose(yL[:,ind_set1])*sys.A    
 end
 
-
-
+if n_nonaut == 0
+    DP.σ = transpose(λ)*aexp.mat
+end
 
 #~~~~~~~~~~~~~~~~~#
 #           Order 1                  #

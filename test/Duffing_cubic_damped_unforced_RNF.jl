@@ -179,7 +179,7 @@ n_nonaut = 0
 n_rom = n_aut + n_nonaut
 #
 # order of the expansion
-o = 3
+o = 5
 #
 # initialise aexp
 # this is a structure containing information about all the sets
@@ -228,7 +228,6 @@ DP = init_parametrisation_struct(n_full,n_rom,aexp.n_sets,n_aut)
 conditions = [λ₀[2] =>-λ₀[1]]
 
 σ₀ = transpose(aexp.mat)*λ₀
-#DP.σ[1,:] = σ₀
 
 style = "RNF"
 
@@ -402,7 +401,9 @@ for ind_set1 = 1:n_aut
 end
 
 
-
+if n_nonaut == 0
+    DP.σ = transpose(λ)*aexp.mat
+end
 
 #~~~~~~~~~~~~~~~~~#
 #           Order 1                  #
