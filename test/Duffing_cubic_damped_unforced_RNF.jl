@@ -458,22 +458,9 @@ for p=2:o
     end
 end
 
-#=
-println("nonlinear term f such that ∂ₜz1 = [..] + f*z1^2*z2")
-println(mysub(mysub(mysub([DP.f[2,9]],DP.subs[end:-1:1]), [Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc]), [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]))
-
-println("nonlinear term f such that ∂ₜz2 = [..] + f*z1*z2^2")
-println(mysub(mysub(mysub([DP.f[1,8]],DP.subs[end:-1:1]), [Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc]), [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]))
-=#
-
-# z1=Sym("z_1");z2=Sym("z_2")
-# zₜ=sympy.zeros(n_aut,1)[:,1]
-# for i_ord=1:length(DP.f[1,:])
-#     for i_var=1:n_aut
-#         zₜ[i_var:i_var]+=mysub(mysub(mysub([DP.f[i_var,i_ord]],DP.subs[end:-1:1]), [Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc]), [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc])*z1^aexp.mat[1,i_ord]*z2^aexp.mat[2,i_ord]
-#     end
-# end
-
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#             Printing             #
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 substitutions = [[Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc], [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]]
 reduced_dynamics_latex_output(DP, aexp, substitutions, "./test/Duffing_cubic_damped_unforced_RNF_output.txt")
 nonlinear_mappings_latex_output(DP, aexp, substitutions, "./test/Duffing_cubic_damped_unforced_RNF_output.txt")
