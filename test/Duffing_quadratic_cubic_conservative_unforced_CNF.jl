@@ -59,7 +59,7 @@ M = diagm(sympy.ones(n_osc,1)[:,1])
 #
 # or simply define a diagonal matrix with entries ωⱼ^2:
 # n_osc = size(M)[1]
-ω=create_pos_vec("ω",n_osc)
+ω = create_pos_vec("ω",n_osc)
 K = diagm(ω.^2)
 #
 # if nonconservative
@@ -70,7 +70,7 @@ K = diagm(ω.^2)
 #
 # or simply create a diagonalised damping matrix
 # generic diagonal damping:
-ξ=create_pos_vec("ξ",n_osc)
+ξ = create_pos_vec("ξ",n_osc)
 ζ = 2*ξ.*ω
 C = diagm(ζ)
 # for the sake of readability, it is useful to specify that each oscillator is underdamped
@@ -83,8 +83,8 @@ C = diagm(ζ)
 # plus the number of algebraic equations needed for the quadratic recast
 # is n_osc = 1 and the nonlinearity is cubic, 
 # only one auxiliary variable is needed (R₁ = U₁^2)
-n_aux=1
-n_full = 2*n_osc+n_aux
+n_aux = 1
+n_full = 2*n_osc + n_aux
 
 # define the LHS as a function LHS_Lin(Yₜ)
 # the matrix A such that LHS_Lin(Yₜ) = A.Yₜ
@@ -398,8 +398,9 @@ for ind_set1 = 1:n_aut
     DP.YLᵀA[ind_set1,:] = yLsᵀ*sys.A    #transpose(yL[:,ind_set1])*sys.A    
 end
 
-
-
+if n_nonaut == 0
+    DP.σ = transpose(λ)*aexp.mat
+end
 
 #~~~~~~~~~~~~~~~~~#
 #           Order 1                  #
@@ -455,10 +456,9 @@ for p=2:o
 end
 
 
-println("nonlinear term f such that ∂ₜz1 = [..] + f*z1^2*z2")
-println(mysub(mysub(mysub([DP.f[1,8]],DP.subs[end:-1:1]), [Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc]), [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]))
-
-println("nonlinear term f such that ∂ₜz2 = [..] + f*z1*z2^2")
-println(mysub(mysub(mysub([DP.f[2,9]],DP.subs[end:-1:1]), [Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc]), [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]))
-
-#checks
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#             Printing             #
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+substitutions = [[Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc], [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]]
+reduced_dynamics_latex_output(DP, aexp, substitutions, "./test/Duffing_quadratic_cubic_conservative_unforced_CNF_output.txt")
+nonlinear_mappings_latex_output(DP, aexp, substitutions, "./test/Duffing_quadratic_cubic_conservative_unforced_CNF_output.txt")
