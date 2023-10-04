@@ -299,7 +299,7 @@ module MORFE_Symbolic
         # LHS_dyn(e_s - e_s + set_current) = A*W(e_s)*f(s,set_current))
         #
         # here I only take the inner ones:
-        part = part[2:end-1][:] # IS THIS RIGHT?
+        part = part[2:end-1][:]
         # NB for forced this has to change! 
         # f^{s}_{s+nA} with  s \in nA is nonzero but ...
         # the p-mapping W is still known from previous calculations of the automonous
@@ -355,6 +355,7 @@ module MORFE_Symbolic
         #       end
         #   end
         # end
+        ind_RHS = aexp.get(set_current)
         for r = 1+DP.n_aut:DP.n_rom
             if set_current[r]>0
                 e_r = 0*set_current;e_r[r] = 1    # create unit vector e_r
@@ -365,7 +366,6 @@ module MORFE_Symbolic
                         e_s = 0*set_current;e_s[s] = 1    # create unit vector e_s
                         set_dependent = set_current + e_s - e_r
                         ind_W = aexp.get(set_dependent)
-                        ind_RHS = aexp.get(set_current)
                         DP.RHS_d[:,ind_RHS] += - sys.A*DP.Ws[:,ind_W]*fs_r*set_dependent[s]
                     end
                 end                
@@ -568,7 +568,7 @@ module MORFE_Symbolic
         println("Printing reduced dynamics")
 
         zₜ = sympy.zeros(DP.n_aut,1)[:,1]
-        z = [Sym("z_$(i)") for i=1:DP.n_aut]
+        z = [Sym("z_$(i)") for i=1:DP.n_rom]
         for i_ord=1:length(DP.f[1,:])
             monom = prod(z .^ aexp.mat[:,i_ord])
             for i_var=1:DP.n_aut
@@ -621,7 +621,7 @@ module MORFE_Symbolic
         println("Printing nonlinear mappings")
 
         u = sympy.zeros(DP.n_aut,1)[:,1]
-        z = [Sym("z_$(i)") for i=1:DP.n_aut]
+        z = [Sym("z_$(i)") for i=1:DP.n_rom]
         for i_ord=1:length(DP.W[1,:])
             monom = prod(z .^ aexp.mat[:,i_ord])
             for i_var=1:DP.n_aut

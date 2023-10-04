@@ -59,7 +59,7 @@ M = diagm(sympy.ones(n_osc,1)[:,1])
 #
 # or simply define a diagonal matrix with entries ωⱼ^2:
 n_osc = size(M)[1]
-ω=create_pos_vec("ω",n_osc)
+ω = create_pos_vec("ω",n_osc)
 K = diagm(ω.^2)
 #
 # if nonconservative
@@ -70,13 +70,13 @@ K = diagm(ω.^2)
 #
 # or simply create a diagonalised damping matrix
 # generic diagonal damping:
-ξ=create_pos_vec("ξ",n_osc)
+ξ = create_pos_vec("ξ",n_osc)
 ζ = 2*ξ.*ω
 C = diagm(ζ)
 # for the sake of readability, it is useful to specify that each oscillator is underdamped
 # which means that the quantity   δⱼ := √(1-ξⱼ^2) is positive
 # definition of δ = √(1-ξ.^2) will be used later for simplification
-δ=create_pos_vec("δ",n_osc)
+δ = create_pos_vec("δ",n_osc)
 
 # the total size of the DAE system will be 
 # the size of the oscillatory system in first order form (2*n_osc)
@@ -113,7 +113,7 @@ function RHS_Lin(Y)
     # first n_osc equations is M*Uₜ = M*V
     F[1:n_osc] = M*V
     # second n_osc equations is M*Vₜ = -C*V -K*U ...
-    F[n_osc+1:2*n_osc] = -C*V-K*U
+    F[n_osc+1:2*n_osc] = -K*U
     # last n_aux equations are the algebraic ones defining the auxiliary variables
     F[2*n_osc+1:2*n_osc+n_aux] = R
     return F
@@ -225,7 +225,7 @@ DP = init_parametrisation_struct(n_full,n_rom,aexp.n_sets,n_aut)
 # let us assume that the rom is an unforced oscillator 
 # then the conditions of near resonances should be written as:
 # conditions = [λ₀[2] =>-λ₀[1]]
-conditions = [λ₀[2] =>-λ₀[1]]
+conditions = [λ₀[2] =>-λ₀[1],λ₀[4] =>-λ₀[3],λ₀[3] =>2*λ₀[1]]
 
 σ₀ = transpose(aexp.mat)*λ₀
 
@@ -376,8 +376,8 @@ for ind_set1 = 1:n_aut
     end
     # assign the chosen master eigenvalue to the corresponding DP.f
     DP.f[ind_set1,ind_setG1] = λ[ind_set1]
-    DP.fs[ind_set1,ind_setG1] = Sym("λ"*string(ind_set1))
-    DP.subs = [DP.subs;Dict(Sym("λ"*string(ind_set1))=>λ[ind_set1])]
+    DP.fs[ind_set1,ind_setG1] = Sym("λ_"*string(ind_set1))
+    DP.subs = [DP.subs;Dict(Sym("λ_"*string(ind_set1))=>λ[ind_set1])]
     # compute the matrix A*yR[aut]
     # which will be used for the top right border of the homological matrix
     yRs = 0*yR[:,ind_set1]
@@ -410,15 +410,16 @@ end
 
 if n_nonaut>0
     # augment λ with eigenvalues of the nonautonomous part:
-    λ = [λ;im*symbols("Ω",positive=true);-im*symbols("Ω",positive=true)]
+    #λ = [λ;im*symbols("Ω",positive=true);-im*symbols("Ω",positive=true)]
+    λ = [λ;im*ω[1]*2;-im*ω[1]*2]
     λ = reshape(λ,1,n_rom)
     # assign the eigenvalues of the nonautonomous part to f:
     DP.f[n_aut+1,aexp.get(aexp.get([p1 n_aut+1]))] = λ[n_aut+1]
-    DP.fs[n_aut+1,aexp.get(aexp.get([p1 n_aut+1]))] = Sym("λ"*string(n_aut+1))
-    DP.subs = [DP.subs;Dict(Sym("λ"*string(n_aut+1))=>λ[n_aut+1])]
+    DP.fs[n_aut+1,aexp.get(aexp.get([p1 n_aut+1]))] = Sym("λ_"*string(n_aut+1))
+    DP.subs = [DP.subs;Dict(Sym("λ_"*string(n_aut+1))=>λ[n_aut+1])]
     DP.f[n_aut+2,aexp.get(aexp.get([p1 n_aut+2]))] = λ[n_aut+2]
-    DP.fs[n_aut+2,aexp.get(aexp.get([p1 n_aut+2]))] = Sym("λ"*string(n_aut+2))
-    DP.subs = [DP.subs;Dict(Sym("λ"*string(n_aut+2))=>λ[n_aut+2])]
+    DP.fs[n_aut+2,aexp.get(aexp.get([p1 n_aut+2]))] = Sym("λ_"*string(n_aut+2))
+    DP.subs = [DP.subs;Dict(Sym("λ_"*string(n_aut+2))=>λ[n_aut+2])]
     # assign the C⁺ₑₓₜ and C⁻ₑₓₜ to the RHS of the nonautonomous homological:
     DP.RHS_d[1:n_full,aexp.get(aexp.get([p1 n_aut+1]))] = C⁺ₑₓₜ
     DP.RHS_d[1:n_full,aexp.get(aexp.get([p1 n_aut+2]))] = C⁻ₑₓₜ
@@ -456,23 +457,9 @@ for p=2:o
     end
 end
 
-#=
-println("nonlinear term f such that ∂ₜz1 = [..] + f*z1^2*z2")
-println(mysub(mysub(mysub([DP.f[2,9]],DP.subs[end:-1:1]), [Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc]), [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]))
-
-println("nonlinear term f such that ∂ₜz2 = [..] + f*z1*z2^2")
-println(mysub(mysub(mysub([DP.f[1,8]],DP.subs[end:-1:1]), [Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc]), [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]))
-=#
-
-z1=Sym("z_1");z2=Sym("z_2");z3=Sym("z_3");z4=Sym("z_4")
-z = [z1,z2,z3,z4]
-zₜ=sympy.zeros(n_aut+n_nonaut,1)[:,1]
-for i_ord=1:length(DP.f[1,:])
-    monom = prod(z .^ aexp.mat[:,i_ord])
-    for i_var=1:n_aut+n_nonaut
-        zₜ[i_var:i_var]+=mysub(mysub(mysub([DP.f[i_var,i_ord]],DP.subs[end:-1:1]), [Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc]), [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc])*monom
-    end
-end
-
-println("RHS dynamics whose LHS is zₜ=[∂z₁/∂t  ∂z₂/∂t  ... ]")
-reduced_dynamics_latex_output(zₜ, "./test/Duffing_cubic_damped_forced_CNF_output.txt")
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#             Printing             #
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+substitutions = [[Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc], [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]]
+reduced_dynamics_latex_output(DP, aexp, substitutions, "./test/Duffing_cubic_conservative_forced_CNF_output.txt")
+nonlinear_mappings_latex_output(DP, aexp, substitutions, "./test/Duffing_cubic_conservative_forced_CNF_output.txt")

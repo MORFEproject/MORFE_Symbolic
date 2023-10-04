@@ -59,7 +59,7 @@ M = diagm(sympy.ones(n_osc,1)[:,1])
 #
 # or simply define a diagonal matrix with entries ωⱼ^2:
 n_osc = size(M)[1]
-ω=create_pos_vec("ω",n_osc)
+ω = create_pos_vec("ω",n_osc)
 K = diagm(ω.^2)
 #
 # if nonconservative
@@ -70,20 +70,20 @@ K = diagm(ω.^2)
 #
 # or simply create a diagonalised damping matrix
 # generic diagonal damping:
-ξ=create_pos_vec("ξ",n_osc)
+ξ = create_pos_vec("ξ",n_osc)
 ζ = 2*ξ.*ω
 C = diagm(ζ)
 # for the sake of readability, it is useful to specify that each oscillator is underdamped
 # which means that the quantity   δⱼ := √(1-ξⱼ^2) is positive
 # definition of δ = √(1-ξ.^2) will be used later for simplification
-δ=create_pos_vec("δ",n_osc)
+δ = create_pos_vec("δ",n_osc)
 
 # the total size of the DAE system will be 
 # the size of the oscillatory system in first order form (2*n_osc)
 # plus the number of algebraic equations needed for the quadratic recast
 # is n_osc = 1 and the nonlinearity is cubic, 
 # only one auxiliary variable is needed (R₁ = U₁^2)
-n_aux=1
+n_aux = 1
 n_full = 2*n_osc+n_aux
 
 # define the LHS as a function LHS_Lin(Yₜ)
