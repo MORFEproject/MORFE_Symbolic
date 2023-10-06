@@ -4,6 +4,10 @@ push!(LOAD_PATH,joinpath(pwd(),"src"))
 using MORFE_Symbolic
 using Combinatorics
 
+include("./../src/output.jl")
+#include("./../src/MORFE_Symbolic.jl")
+#include("./../src/basic_functionalities.jl")
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #                            Definition of original system                                       #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -225,7 +229,7 @@ DP = init_parametrisation_struct(n_full,n_rom,aexp.n_sets,n_aut)
 # let us assume that the rom is an unforced oscillator 
 # then the conditions of near resonances should be written as:
 # conditions = [λ₀[2] =>-λ₀[1]]
-conditions = [λ₀[2] =>-λ₀[1],λ₀[4] =>-λ₀[3],λ₀[3] =>2*λ₀[1]]
+conditions = [λ₀[2] =>-λ₀[1],λ₀[4] =>-λ₀[3]]#,λ₀[3] =>2*λ₀[1]]
 
 σ₀ = transpose(aexp.mat)*λ₀
 
@@ -410,8 +414,8 @@ end
 
 if n_nonaut>0
     # augment λ with eigenvalues of the nonautonomous part:
-    #λ = [λ;im*symbols("Ω",positive=true);-im*symbols("Ω",positive=true)]
-    λ = [λ;im*ω[1]*2;-im*ω[1]*2]
+    λ = [λ;im*symbols("Ω",positive=true);-im*symbols("Ω",positive=true)]
+    #λ = [λ;im*ω[1]*2;-im*ω[1]*2]
     λ = reshape(λ,1,n_rom)
     # assign the eigenvalues of the nonautonomous part to f:
     DP.f[n_aut+1,aexp.get(aexp.get([p1 n_aut+1]))] = λ[n_aut+1]
