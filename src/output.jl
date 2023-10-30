@@ -9,15 +9,18 @@ Auxiliary function for latex printing. Creates non commutative monoms so that th
 the correct order when printing.
 This function is primarely intended for use inside the module, and not for exportation.
 """
-function non_commutative_monoms_for_latex_expressions(monom_number, monoms_exponents, vars)
+function non_commutative_monoms_for_latex_expressions(monom_number, monoms_exponents, normal_coordinate)
+    if sum(monoms_exponents[monom_number]) == 0
+        return 1
+    end
     monom_string = ""
-    for i = 1:length(vars)
+    for i = 1:length(monoms_exponents[1])
         exp = monoms_exponents[monom_number][i]
         if exp != 0
             if exp == 1
-                monom_string *= "z_$(i)*"
+                monom_string *= normal_coordinate * "_$(i)*"
             else
-                monom_string *= "z_$(i)^$(exp)*"
+                monom_string *= normal_coordinate * "_$(i)^$(exp)*"
             end
         end
     end
@@ -65,14 +68,14 @@ Auxiliary function to transform a given polynomial expression in its latex code.
     - latex_output: The string to which the latex code is appended.
 This function is primarely intended for use inside the module, and not for exportation.
 """
-function latex_code_for_polynomial_expression(vars::Vector{Sym}, expr_coeffs::Vector{Sym}, expr_monoms, latex_output::String)
+function latex_code_for_polynomial_expression(expr_coeffs::Vector{Sym}, expr_monoms, latex_output::String, normal_coordinate)
     ordering = sortperm(expr_monoms, lt=multiexponent_lt)
     expr_coeffs = expr_coeffs[ordering]
     expr_monoms = expr_monoms[ordering]
 
     for j in eachindex(expr_coeffs)
         sign_flag = false
-        monom = non_commutative_monoms_for_latex_expressions(j, expr_monoms, vars)
+        monom = non_commutative_monoms_for_latex_expressions(j, expr_monoms, normal_coordinate)
         # This sign flag is used as a way to make the i stay outside of fraction numerators
         if all_negative_coeffs(expr_coeffs[j])
             expr_coeffs[j] = -expr_coeffs[j]
@@ -82,7 +85,9 @@ function latex_code_for_polynomial_expression(vars::Vector{Sym}, expr_coeffs::Ve
             expr_coeffs[j] = sympy.Mul(Sym(im), expr_coeffs[j]/im, evaluate=False)
         end
         # In the next lines the Sym("a") is necessary so that -i is not displayed as \left( -i \right)
-        if expr_coeffs[j] == 1
+        if monom == 1
+            latex_result = latexify(sympy.Add(Sym("a"), expr_coeffs[j], evaluate=False), cdot = false)[3:end-1]
+        elseif expr_coeffs[j] == 1
             latex_result = latexify(sympy.Add(Sym("a"), monom, evaluate=False), cdot = false)[3:end-1]
         else
             latex_result = latexify(sympy.Add(Sym("a"), sympy.Mul(expr_coeffs[j], monom, evaluate=False), evaluate=False), cdot = false)[3:end-1]
@@ -109,22 +114,21 @@ Function to output the reduced dynamics on latex format. Input arguments are:\\
     - file_mode: The opening mode of the file. If "a", the output is appended at the end.
                     If "w" overwrites existing files with the same name.
 """
-function reduced_dynamics_latex_output(DP::parametrisation_struct, aexp::multiexponent_struct, substitutions, output_file = nothing, file_mode::String = "a")
+function reduced_dynamics_latex_output(DP::parametrisation_struct, aexp::multiexponent_struct, output_file = nothing;
+                                       file_mode::String = "a", normal_coordinate = 'z', real = false)
     poly_from_expr = sympy.polys.polytools.poly_from_expr
 
     println("Printing reduced dynamics")
 
     zₜ = sympy.zeros(DP.n_rom,1)[:,1]
-    z = [Sym("z_$(i)") for i=1:DP.n_rom]
+    z = [Sym("$(normal_coordinate)_$(i)") for i=1:DP.n_rom]
     for i_ord=1:length(DP.f[1,:])
         monom = prod(z .^ aexp.mat[:,i_ord])
-        for i_var=1:DP.n_rom
-            substituted = mysub([DP.f[i_var,i_ord]],DP.subs[end:-1:1])
-            for substitute in substitutions
-                substituted = mysub(substituted, substitute)
-            end
-            zₜ[i_var:i_var] += substituted*monom
-        end
+        if !real 
+            zₜ += DP.f[:,i_ord]*monom
+        else
+            zₜ += DP.fr[:,i_ord]*monom
+        end 
     end
     
     latex_output = "\\begin{align}"
@@ -132,23 +136,31 @@ function reduced_dynamics_latex_output(DP::parametrisation_struct, aexp::multiex
         expr = poly_from_expr(zₜ[i], gens = z)
         expr_monoms = expr[1].monoms()
         expr_coeffs = expr[1].coeffs()
-        latex_output *= "\n\\dot{z}_{$(i)} &="
-        latex_output = latex_code_for_polynomial_expression(z, expr_coeffs, expr_monoms, latex_output)
+        latex_output *= "\n\\dot{$(normal_coordinate)}_{$(i)} &="
+        latex_output = latex_code_for_polynomial_expression(expr_coeffs, expr_monoms, latex_output, normal_coordinate)
         latex_output *= "\\\\"
     end
     latex_output = replace(latex_output, "I" => "\\mathit{i}")
     latex_output = latex_output[1:end-2] * "\n\\end{align}\n"
     
     if output_file === nothing
-        println("Reduced dynamics:")
+        if !real
+            println("Reduced dynamics:")
+        else
+            println("Realified reduced dynamics:")
+        end 
         println(latex_output)
     else
         open(output_file, file_mode) do file
-            write(file, "Reduced dynamics:\n")
+            if !real
+                write(file, "Reduced dynamics:\n")
+            else
+                write(file, "Realified reduced dynamics:\n")
+            end
             write(file, latex_output)
         end 
     end
-    println("Reduced dynamics printed")
+    println("Reduced dynamics printed\n")
 end
 
 """
@@ -162,22 +174,21 @@ Function to output the nonlinear mappings on latex format. Input arguments are:\
     - file_mode: The opening mode of the file. If "a", the output is appended at the end.
                     If "w" overwrites existing files with the same name.
 """
-function nonlinear_mappings_latex_output(DP::parametrisation_struct, aexp::multiexponent_struct, substitutions, output_file = nothing, file_mode::String = "a")
+function nonlinear_mappings_latex_output(DP::parametrisation_struct, aexp::multiexponent_struct, output_file = nothing;
+                                         file_mode::String = "a", normal_coordinate = 'z', real = false)
     poly_from_expr = sympy.polys.polytools.poly_from_expr
 
     println("Printing nonlinear mappings")
 
-    u = sympy.zeros(DP.n_aut,1)[:,1]
-    z = [Sym("z_$(i)") for i=1:DP.n_rom]
+    u = sympy.zeros(DP.n_full,1)[:,1]
+    z = [Sym("$(normal_coordinate)_$(i)") for i=1:DP.n_rom]
     for i_ord=1:length(DP.W[1,:])
         monom = prod(z .^ aexp.mat[:,i_ord])
-        for i_var=1:DP.n_aut
-            substituted = mysub([DP.W[i_var,i_ord]],DP.subs[end:-1:1])
-            for substitute in substitutions
-                substituted = mysub(substituted, substitute)
-            end
-            u[i_var:i_var] += substituted*monom
-        end
+        if !real 
+            u += DP.W[:,i_ord]*monom
+        else
+            u += DP.Wr[:,i_ord]*monom
+        end 
     end
     
     latex_output = "\\begin{align}"
@@ -186,20 +197,94 @@ function nonlinear_mappings_latex_output(DP::parametrisation_struct, aexp::multi
         expr_monoms = expr[1].monoms()
         expr_coeffs = expr[1].coeffs()
         latex_output *= "\ny_{$(i)} &="
-        latex_output = latex_code_for_polynomial_expression(z, expr_coeffs, expr_monoms, latex_output)
+        latex_output = latex_code_for_polynomial_expression(expr_coeffs, expr_monoms, latex_output, normal_coordinate)
         latex_output *= "\\\\"
     end
     latex_output = replace(latex_output, "I" => "\\mathit{i}")
     latex_output = latex_output[1:end-2] * "\n\\end{align}\n"
     
     if output_file === nothing
-        println("Nonlinear mappings:")
+        if !real
+            println("Nonlinear mappings:")
+        else
+            println("Realified nonlinear mappings:")
+        end 
         println(latex_output)
     else
         open(output_file, file_mode) do file
-            write(file, "Nonlinear mappings:\n")
+            if !real
+                write(file, "Nonlinear mappings:\n")
+            else
+                write(file, "Realified nonlinear mappings:\n")
+            end
             write(file, latex_output)
         end 
     end
-    println("Nonlinear mappings printed")
+    println("Nonlinear mappings printed\n")
 end
+
+function polar_realifed_reduced_dynamics_output(real, imaginary, output_file = nothing; file_mode::String = "a")
+    println("Printing polar realified reduced dynamics")
+    
+    latex_output = "\\begin{align}"
+    latex_output *= "\n\\dot{\\rho} &= " * latexify(real, cdot = false)[2:end-1] * "\\\\"
+    latex_output *= "\n\\rho \\dot{\\theta} &= " * latexify(imaginary, cdot = false)[2:end-1] * "\\\\"
+    latex_output = latex_output[1:end-2] * "\n\\end{align}\n"
+    
+    if output_file === nothing
+        println("Polar realified reduced dynamics:")
+        println(latex_output)
+    else
+        open(output_file, file_mode) do file
+            write(file, "Polar realified reduced dynamics:\n")
+            write(file, latex_output)
+        end 
+    end
+    println("Polar realified reduced dynamics printed")
+end
+
+function backbone_output(omega_rho, output_file = nothing; file_mode::String = "a",
+                         physical = false, ampli_rho)
+    poly_from_expr = sympy.polys.polytools.poly_from_expr
+
+    println("Printing backbone")
+    ρ = symbols("ρ", real=true)
+    latex_output = "\\begin{align}"
+
+    sum = 0
+    for i in eachindex(omega_rho)
+        sum += omega_rho[i]
+    end
+    expr = poly_from_expr(sum, gens = ρ)
+    expr_monoms = expr[1].monoms()
+    expr_coeffs = expr[1].coeffs()
+    latex_output *= "\n\\omega &="
+    latex_output = latex_code_for_polynomial_expression(expr_coeffs, expr_monoms, latex_output, "ρ")
+    latex_output *= "\\\\"
+
+    if physical
+        sum = 0
+        for i in eachindex(ampli_rho)
+            sum += ampli_rho[i]
+        end
+        expr = poly_from_expr(sum, gens = ρ)
+        expr_monoms = expr[1].monoms()
+        expr_coeffs = expr[1].coeffs()
+        latex_output *= "\nu_{max} &="
+        latex_output = latex_code_for_polynomial_expression(expr_coeffs, expr_monoms, latex_output, "ρ")
+        latex_output *= "\\\\"
+    end
+    latex_output = replace(latex_output, "I" => "\\mathit{i}")
+    latex_output = latex_output[1:end-2] * "\n\\end{align}\n"
+
+    if output_file === nothing
+        println("Backbone:")
+        println(latex_output)
+    else
+        open(output_file, file_mode) do file
+            write(file, "Backbone:\n")
+            write(file, latex_output)
+        end 
+    end
+    println("Backbone printed\n")
+end 
