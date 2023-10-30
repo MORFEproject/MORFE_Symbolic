@@ -6,6 +6,7 @@ module MORFE_Symbolic
 
     include("right_hand_side.jl")
     include("basic_functionalities.jl")
+    include("realification.jl")
     
     export create_gen_vec,create_pos_vec
     export mysimp,mysub
@@ -13,7 +14,9 @@ module MORFE_Symbolic
     export system_struct,extract_Lin,extract_Quad,Q_fun
     export parametrisation_struct,init_parametrisation_struct
     export fill_RHS_quad!,fill_RHS_dyn!,fill_RHS_lin!
-    export compute_order_zero,generalised_eigenproblem,solve_homological!    
+    export compute_order_zero,generalised_eigenproblem,solve_homological!
+    export substitutions!, reduced_dynamics_substitutions!, nonlinear_mappings_substitutions!
+    export polar_realification, cartesian_realification!, backbone_CNF
 
     #~~~~~~~~~~~~~~~~~#
     #           compute                #
@@ -94,6 +97,53 @@ module MORFE_Symbolic
             if DP.f[i_aut,ind_set] != 0
                 DP.fs[i_aut,ind_set] = Sym("f"*string(i_aut)*"|"*string(ind_set))
                 DP.subs = [DP.subs;Dict(Sym("f"*string(i_aut)*"|"*string(ind_set))=>DP.f[i_aut,ind_set])]
+            end
+        end
+    end
+
+    function substitutions!(DP::parametrisation_struct,substitutions)
+        println("Substituting values:")
+        t1 = time_ns()
+        for i in eachindex(DP.subs)
+            for key in keys(DP.subs[i])
+                substituted = mysub([DP.subs[i][key]],DP.subs[1:i-1])
+                for substitute in substitutions
+                    substituted = mysub(substituted, substitute)
+                end
+                DP.subs[i][key] = substituted[1]
+            end
+        end
+        t2 = time_ns()
+        println("Elapsed time: $((t2-t1)/1.0e9) s")
+        println("")
+    end
+
+    function reduced_dynamics_substitutions!(DP::parametrisation_struct,substitutions)
+        println("Substituting reduced dynamics:")
+        t1 = time_ns()
+        for i_ord=1:length(DP.f[1,:])
+            for i_var=1:DP.n_rom
+                substituted = mysub([DP.f[i_var,i_ord]],DP.subs[end:-1:1])
+                for substitute in substitutions
+                    substituted = mysub(substituted, substitute)
+                end
+                DP.f[i_var,i_ord] = substituted[1]
+            end
+            println("   Set $(i_ord) OK!")
+        end
+        t2 = time_ns()
+        println("Elapsed time: $((t2-t1)/1.0e9) s")
+        println("")
+    end
+
+    function nonlinear_mappings_substitutions!(DP::parametrisation_struct,substitutions)
+        for i_ord=1:length(DP.W[1,:])
+            for i_var=1:DP.n_full
+                substituted = mysub([DP.W[i_var,i_ord]],DP.subs[end:-1:1])
+                for substitute in substitutions
+                    substituted = mysub(substituted, substitute)
+                end
+                DP.W[i_var,i_ord] = substituted[1]
             end
         end
     end
