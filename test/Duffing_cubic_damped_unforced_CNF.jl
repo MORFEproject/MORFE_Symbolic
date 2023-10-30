@@ -4,6 +4,8 @@ push!(LOAD_PATH,joinpath(pwd(),"src"))
 using MORFE_Symbolic
 using Combinatorics
 
+include("./../src/output.jl")
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #                            Definition of original system                                       #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -127,7 +129,7 @@ function RHS_Quad(Y)
     U = Y[1:n_osc]                        # first n_osc positions is U
     R = Y[2*n_osc+1:2*n_osc+n_aux]      # last n_aux positions are the auxiliary variables
     # define only cubic nonlinearity
-    h = Sym("h")
+    h = symbols("h", real=true)
     # assign to the second n_osc equations
     F[n_osc+1] = -  h*U[1]*R[1]
     # last n_aux equations are the algebraic ones defining the auxiliary variables
@@ -458,8 +460,19 @@ for p=2:o
 end
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-#             Printing             #
+#          Substitutions           #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 substitutions = [[Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc], [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]]
-reduced_dynamics_latex_output(DP, aexp, substitutions, "./test/Duffing_cubic_damped_unforced_CNF_output.txt")
-nonlinear_mappings_latex_output(DP, aexp, substitutions, "./test/Duffing_cubic_damped_unforced_CNF_output.txt")
+reduced_dynamics_substitutions!(DP, substitutions)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#             Printing             #
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+reduced_dynamics_latex_output(DP, aexp, "./test/Duffing_cubic_damped_unforced_CNF_output.txt")
+# nonlinear_mappings_latex_output(DP, aexp, "./test/Duffing_cubic_damped_unforced_CNF_output.txt")
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#          Realification           #
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+# real, imaginary = polar_realification(DP, aexp)
+# cartesian_realification!(DP, aexp, n_aux)

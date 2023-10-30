@@ -8,6 +8,7 @@ include("./../src/output.jl")
 #include("./../src/MORFE_Symbolic.jl")
 #include("./../src/basic_functionalities.jl")
 
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #                            Definition of original system                                       #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -117,7 +118,7 @@ function RHS_Lin(Y)
     # first n_osc equations is M*Uₜ = M*V
     F[1:n_osc] = M*V
     # second n_osc equations is M*Vₜ = -C*V -K*U ...
-    F[n_osc+1:2*n_osc] = -K*U
+    F[n_osc+1:2*n_osc] = -C*V -K*U
     # last n_aux equations are the algebraic ones defining the auxiliary variables
     F[2*n_osc+1:2*n_osc+n_aux] = R
     return F
@@ -131,7 +132,7 @@ function RHS_Quad(Y)
     U = Y[1:n_osc]                        # first n_osc positions is U
     R = Y[2*n_osc+1:2*n_osc+n_aux]      # last n_aux positions are the auxiliary variables
     # define only cubic nonlinearity
-    h = symbols("h", real=true)
+    h = symbols("h", real = true)
     # assign to the second n_osc equations
     F[n_osc+1] = -  h*U[1]*R[1]
     # last n_aux equations are the algebraic ones defining the auxiliary variables
@@ -465,19 +466,20 @@ end
 #          Substitutions           #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 substitutions = [[Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc], [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]]
+substitutions!(DP, substitutions)
 reduced_dynamics_substitutions!(DP, substitutions)
 # nonlinear_mappings_substitutions!(DP, substitutions)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #             Printing             #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-# reduced_dynamics_latex_output(DP, aexp, "./test/Duffing_cubic_conservative_forced_CNF_output.txt")
-# nonlinear_mappings_latex_output(DP, aexp, "./test/Duffing_cubic_conservative_forced_CNF_output.txt")
+reduced_dynamics_latex_output(DP, aexp, "./test/Duffing_cubic_damped_forced_CNF_output.txt")
+# nonlinear_mappings_latex_output(DP, aexp, "./test/Duffing_cubic_damped_forced_CNF_output.txt")
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #          Realification           #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 real, imaginary = polar_realification(DP, aexp)
-polar_realifed_reduced_dynamics_output(real, imaginary, "./test/Duffing_cubic_conservative_forced_CNF_output.txt")
+polar_realifed_reduced_dynamics_output(real, imaginary, "./test/Duffing_cubic_damped_forced_CNF_output.txt")
 
 # cartesian_realification!(DP, aexp, n_aux)

@@ -3,6 +3,7 @@ using LinearAlgebra
 push!(LOAD_PATH,joinpath(pwd(),"src"))
 using MORFE_Symbolic
 
+include("./../src/output.jl")
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #                            Definition of original system                                       #
@@ -129,7 +130,7 @@ function RHS_Quad(Y)
     U = Y[1:n_osc]                        # first n_osc positions is U
     R = Y[2*n_osc+1:2*n_osc+n_aux]      # last n_aux positions are the auxiliary variables
     # define only cubic nonlinearity
-    h = Sym("h")
+    h = symbols("h", real=true)
     # assign to the second n_osc equations
     # la ligne ci-dessous pour quad et cub: commentée
     #F[n_osc+1] = -  h*U[1]*R[1] - g*U[1]*U[1]
@@ -184,7 +185,7 @@ n_nonaut = 0
 n_rom = n_aut + n_nonaut
 #
 # order of the expansion
-o = 11
+o = 35
 #
 # initialise aexp
 # this is a structure containing information about all the sets
@@ -334,7 +335,7 @@ sys.B+= ∇Q0
 # Λ,YR,YL = mysub(Λ,simpl),mysub(YR,simpl),mysub(YL,simpl)
 # 
 # Normally the eigenvalues are organised as 
-# the first n_aux eigenvalues Λ[1:n_aux] are equal to ∞
+# the first n_aux eigenvalues Λ[1DP,aexp:n_aux] are equal to ∞
 # then the meaningful eigenvalues starts usually sorted 
 # by lower ω to higher
 # Λ[n_aux+1:n_aux+2] are relative to ω₁
@@ -432,7 +433,7 @@ if n_nonaut>0
     #  ... ]                                                 # and so on
     # solve homological for the linear nonautonomous part:
     for ind_set1_nonaut = n_aut+1:n_aut+n_nonaut
-        ind_setG1_nonaut = aexp.get(aexp.get([p1 ind_set1_nonaut]))
+        ind_setG1_nonaut = aexp.gDP,aexpet(aexp.get([p1 ind_set1_nonaut]))
         println("solving order "*string(p1)*" and set "*string(ind_setG1_nonaut)*" with exponents:")
         println(aexp.mat[:,ind_setG1_nonaut])
         solve_homological!(ind_setG1_nonaut,DP,aexp,sys)
@@ -457,8 +458,27 @@ for p=2:o
 end
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-#             Printing             #
+#          Substitutions           #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 substitutions = [[Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc], [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]]
-reduced_dynamics_latex_output(DP, aexp, substitutions, "./test/Duffing_cubic_conservative_unforced_CNF_output.txt")
-nonlinear_mappings_latex_output(DP, aexp, substitutions, "./test/Duffing_cubic_conservative_unforced_CNF_output.txt")
+substitutions!(DP, substitutions)
+reduced_dynamics_substitutions!(DP, substitutions)
+nonlinear_mappings_substitutions!(DP, substitutions)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#             Printing             #
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+# reduced_dynamics_latex_output(DP, aexp, "./test/Duffing_cubic_conservative_unforced_CNF_output.txt")
+# nonlinear_mappings_latex_output(DP, aexp, "./test/Duffing_cubic_conservative_unforced_CNF_output.txt")
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#          Realification           #
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+# real, imaginary = polar_realification(DP, aexp)
+omega, amplitude = backbone_CNF(DP, aexp, o, true)
+backbone_output(omega, "./test/Duffing_cubic_conservative_unforced_CNF_output.txt", physical = true, ampli_rho = amplitude)
+#polar_realifed_reduced_dynamics_output(amplitude, omega, "./test/Duffing_cubic_conservative_unforced_CNF_output.txt")
+
+# cartesian_realification!(DP, aexp, n_aux)
+# reduced_dynamics_latex_output(DP, aexp, "./test/Duffing_cubic_conservative_unforced_CNF_output.txt", normal_coordinate = 'a', real = true)
+# nonlinear_mappings_latex_output(DP, aexp, "./test/Duffing_cubic_conservative_unforced_CNF_output.txt", normal_coordinate = 'a', real = true)
