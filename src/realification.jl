@@ -44,11 +44,15 @@ function polar_realification(DP::parametrisation_struct,aexp::multiexponent_stru
     t2 = time_ns()
     println("Polar realification ended")
     println("Elapsed time: $((t2-t1)/1.0e9) s")
+    println("")
 
     return real, imaginary
 end
 
 function cartesian_realification!(DP::parametrisation_struct, aexp::multiexponent_struct, n_aux::Int64)
+    t1 = time_ns()
+    println("Cartesian realification started")
+
     for i_set in 1:DP.n_sets
         Av = aexp.mat[:,i_set]
         p = sum(Av)
@@ -74,6 +78,11 @@ function cartesian_realification!(DP::parametrisation_struct, aexp::multiexponen
         DP.fr[i+nzfhalf,:] = imag(DP.fr[i,:])
         DP.fr[i,:] = real(DP.fr[i,:])
     end
+
+    t2 = time_ns()
+    println("Cartesian realification ended")
+    println("Elapsed time: $((t2-t1)/1.0e9) s")
+    println("")
 end
 
 function recursive_C2R!(Iv::Vector{Int64}, p::Int64, pos::Int64, posinit::Int64, Av::Vector{Int64},
@@ -180,7 +189,7 @@ function backbone_CNF(DP::parametrisation_struct, aexp::multiexponent_struct, o_
         real = simplify(trigsimp(term[1]))
         imag = simplify(trigsimp(term[2]))
         if real != 0
-            println("Caution! There seem to be non-imaginary coefficients on the backbone calculation.")
+            println("Caution! There seems to be non-imaginary coefficients on the backbone calculation.")
         end
         omega_rho[order] += imag
     end
@@ -196,11 +205,13 @@ function backbone_CNF(DP::parametrisation_struct, aexp::multiexponent_struct, o_
         t2 = time_ns()
         println("Backbone calculation ended")
         println("Elapsed time: $((t2-t1)/1.0e9) s")
+        println("")
         return omega_rho, ampli_rho
     end
 
     t2 = time_ns()
     println("Backbone calculation ended")
     println("Elapsed time: $((t2-t1)/1.0e9) s")
+    println("")
     return omega_rho
 end 

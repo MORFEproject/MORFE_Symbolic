@@ -112,6 +112,7 @@ module MORFE_Symbolic
                 end
                 DP.subs[i][key] = substituted[1]
             end
+            println("   Subsitution $(i_ord)/$(length(DP.subs)) OK!")
         end
         t2 = time_ns()
         println("Elapsed time: $((t2-t1)/1.0e9) s")
@@ -129,7 +130,7 @@ module MORFE_Symbolic
                 end
                 DP.f[i_var,i_ord] = substituted[1]
             end
-            println("   Set $(i_ord) OK!")
+            println("   Set $(i_ord)/$(length(DP.f[1,:])) OK!")
         end
         t2 = time_ns()
         println("Elapsed time: $((t2-t1)/1.0e9) s")
@@ -137,6 +138,8 @@ module MORFE_Symbolic
     end
 
     function nonlinear_mappings_substitutions!(DP::parametrisation_struct,substitutions)
+        println("Substituting nonlinear mappings:")
+        t1 = time_ns()
         for i_ord=1:length(DP.W[1,:])
             for i_var=1:DP.n_full
                 substituted = mysub([DP.W[i_var,i_ord]],DP.subs[end:-1:1])
@@ -145,7 +148,11 @@ module MORFE_Symbolic
                 end
                 DP.W[i_var,i_ord] = substituted[1]
             end
+            println("   Set $(i_ord)/$(length(DP.f[1,:])) OK!")
         end
+        t2 = time_ns()
+        println("Elapsed time: $((t2-t1)/1.0e9) s")
+        println("")
     end
 
 end
