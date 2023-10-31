@@ -465,8 +465,8 @@ end
 #          Substitutions           #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 substitutions = [[Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc], [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]]
-reduced_dynamics_substitutions!(DP, substitutions)
-# nonlinear_mappings_substitutions!(DP, substitutions)
+#reduced_dynamics_substitutions!(DP, substitutions)
+nonlinear_mappings_substitutions!(DP, substitutions)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #             Printing             #
@@ -477,7 +477,10 @@ reduced_dynamics_substitutions!(DP, substitutions)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #          Realification           #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-real, imaginary = polar_realification(DP, aexp)
-polar_realifed_reduced_dynamics_output(real, imaginary, "./test/Duffing_cubic_conservative_forced_CNF_output.txt")
+# real, imaginary = polar_realification(DP, aexp)
+# polar_realifed_reduced_dynamics_output(real, imaginary, "./test/Duffing_cubic_conservative_forced_CNF_output.txt")
+
+amplitude = physical_amplitudes_CNF(DP, aexp, o)
+physical_amplitudes_output(amplitude, "./test/Duffing_cubic_conservative_forced_CNF_output.txt")
 
 # cartesian_realification!(DP, aexp, n_aux)

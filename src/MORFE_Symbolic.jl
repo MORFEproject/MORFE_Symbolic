@@ -16,7 +16,7 @@ module MORFE_Symbolic
     export fill_RHS_quad!,fill_RHS_dyn!,fill_RHS_lin!
     export compute_order_zero,generalised_eigenproblem,solve_homological!
     export substitutions!, reduced_dynamics_substitutions!, nonlinear_mappings_substitutions!
-    export polar_realification, cartesian_realification!, backbone_CNF
+    export polar_realification, cartesian_realification!, backbone_CNF, physical_amplitudes_CNF
 
     #~~~~~~~~~~~~~~~~~#
     #           compute                #
@@ -112,7 +112,7 @@ module MORFE_Symbolic
                 end
                 DP.subs[i][key] = substituted[1]
             end
-            println("   Subsitution $(i_ord)/$(length(DP.subs)) OK!")
+            println("   Subsitution $(i)/$(length(DP.subs)) OK!")
         end
         t2 = time_ns()
         println("Elapsed time: $((t2-t1)/1.0e9) s")

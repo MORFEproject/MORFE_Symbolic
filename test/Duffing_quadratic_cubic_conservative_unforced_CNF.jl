@@ -3,6 +3,7 @@ using LinearAlgebra
 push!(LOAD_PATH,joinpath(pwd(),"src"))
 using MORFE_Symbolic
 
+include("./../src/output.jl")
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #                            Definition of original system                                       #
@@ -183,7 +184,7 @@ n_nonaut = 0
 n_rom = n_aut + n_nonaut
 #
 # order of the expansion
-o = 7
+o = 9
 #
 # initialise aexp
 # this is a structure containing information about all the sets
@@ -457,8 +458,27 @@ end
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-#             Printing             #
+#          Substitutions           #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 substitutions = [[Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc], [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]]
-reduced_dynamics_latex_output(DP, aexp, substitutions, "./test/Duffing_quadratic_cubic_conservative_unforced_CNF_output.txt")
-nonlinear_mappings_latex_output(DP, aexp, substitutions, "./test/Duffing_quadratic_cubic_conservative_unforced_CNF_output.txt")
+substitutions!(DP, substitutions)
+reduced_dynamics_substitutions!(DP, substitutions)
+# nonlinear_mappings_substitutions!(DP, substitutions)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#             Printing             #
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+reduced_dynamics_latex_output(DP, aexp, "./test/Duffing_quadratic_cubic_conservative_unforced_CNF_output.txt")
+# nonlinear_mappings_latex_output(DP, aexp, "./test/Duffing_quadratic_cubic_conservative_unforced_CNF_output.txt")
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#          Realification           #
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+# real, imaginary = polar_realification(DP, aexp)
+# omega, amplitude = backbone_CNF(DP, aexp, o, true)
+# backbone_output(omega, "./test/Duffing_quadratic_cubic_conservative_unforced_CNF_output.txt", physical = true, ampli_rho = amplitude)
+#polar_realifed_reduced_dynamics_output(amplitude, omega, "./test/Duffing_quadratic_cubic_conservative_unforced_CNF_output.txt")
+
+# cartesian_realification!(DP, aexp, n_aux)
+# reduced_dynamics_latex_output(DP, aexp, "./test/Duffing_quadratic_cubic_conservative_unforced_CNF_output.txt", normal_coordinate = 'a', real = true)
+# nonlinear_mappings_latex_output(DP, aexp, "./test/Duffing_quadratic_cubic_conservative_unforced_CNF_output.txt", normal_coordinate = 'a', real = true)

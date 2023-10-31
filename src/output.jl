@@ -243,8 +243,7 @@ function polar_realifed_reduced_dynamics_output(real, imaginary, output_file = n
     println("Polar realified reduced dynamics printed")
 end
 
-function backbone_output(omega_rho, output_file = nothing; file_mode::String = "a",
-                         physical = false, ampli_rho)
+function backbone_output(omega_rho, output_file = nothing; file_mode::String = "a")
     poly_from_expr = sympy.polys.polytools.poly_from_expr
 
     println("Printing backbone")
@@ -261,19 +260,6 @@ function backbone_output(omega_rho, output_file = nothing; file_mode::String = "
     latex_output *= "\n\\omega &="
     latex_output = latex_code_for_polynomial_expression(expr_coeffs, expr_monoms, latex_output, "ρ")
     latex_output *= "\\\\"
-
-    if physical
-        sum = 0
-        for i in eachindex(ampli_rho)
-            sum += ampli_rho[i]
-        end
-        expr = poly_from_expr(sum, gens = ρ)
-        expr_monoms = expr[1].monoms()
-        expr_coeffs = expr[1].coeffs()
-        latex_output *= "\nu_{max} &="
-        latex_output = latex_code_for_polynomial_expression(expr_coeffs, expr_monoms, latex_output, "ρ")
-        latex_output *= "\\\\"
-    end
     latex_output = replace(latex_output, "I" => "\\mathit{i}")
     latex_output = latex_output[1:end-2] * "\n\\end{align}\n"
 
@@ -287,4 +273,36 @@ function backbone_output(omega_rho, output_file = nothing; file_mode::String = "
         end 
     end
     println("Backbone printed\n")
+end
+
+function physical_amplitudes_output(ampli_rho, output_file = nothing; file_mode::String = "a")
+    poly_from_expr = sympy.polys.polytools.poly_from_expr
+
+    println("Printing physical amplitudes")
+    ρ = symbols("ρ", real=true)
+    latex_output = "\\begin{align}"
+
+    sum = 0
+    for i in eachindex(ampli_rho)
+        sum += ampli_rho[i]
+    end
+    expr = poly_from_expr(sum, gens = ρ)
+    expr_monoms = expr[1].monoms()
+    expr_coeffs = expr[1].coeffs()
+    latex_output *= "\nu_{max} &="
+    latex_output = latex_code_for_polynomial_expression(expr_coeffs, expr_monoms, latex_output, "ρ")
+    latex_output *= "\\\\"
+    latex_output = replace(latex_output, "I" => "\\mathit{i}")
+    latex_output = latex_output[1:end-2] * "\n\\end{align}\n"
+
+    if output_file === nothing
+        println("Physical amplitudes:")
+        println(latex_output)
+    else
+        open(output_file, file_mode) do file
+            write(file, "Physical amplitudes:\n")
+            write(file, latex_output)
+        end 
+    end
+    println("Physical amplitudes printed\n")
 end 

@@ -185,7 +185,7 @@ n_nonaut = 0
 n_rom = n_aut + n_nonaut
 #
 # order of the expansion
-o = 35
+o = 25
 #
 # initialise aexp
 # this is a structure containing information about all the sets
@@ -475,8 +475,10 @@ nonlinear_mappings_substitutions!(DP, substitutions)
 #          Realification           #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 # real, imaginary = polar_realification(DP, aexp)
-omega, amplitude = backbone_CNF(DP, aexp, o, true)
-backbone_output(omega, "./test/Duffing_cubic_conservative_unforced_CNF_output.txt", physical = true, ampli_rho = amplitude)
+omega = backbone_CNF(DP, aexp, o)
+amplitude = physical_amplitudes_CNF(DP, aexp, o)
+backbone_output(omega, "./test/Duffing_cubic_conservative_unforced_CNF_output.txt")
+physical_amplitudes_output(amplitude, "./test/Duffing_cubic_conservative_unforced_CNF_output.txt")
 #polar_realifed_reduced_dynamics_output(amplitude, omega, "./test/Duffing_cubic_conservative_unforced_CNF_output.txt")
 
 # cartesian_realification!(DP, aexp, n_aux)

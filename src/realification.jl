@@ -171,7 +171,7 @@ end
 
 # end
 
-function backbone_CNF(DP::parametrisation_struct, aexp::multiexponent_struct, o_max::Int64, physical::Bool = false)
+function backbone_CNF(DP::parametrisation_struct, aexp::multiexponent_struct, o_max::Int64)
     get_re_im = sympy.core.expr.Expr.as_real_imag
     trigsimp = sympy.core.expr.Expr.trigsimp
 
@@ -194,24 +194,30 @@ function backbone_CNF(DP::parametrisation_struct, aexp::multiexponent_struct, o_
         omega_rho[order] += imag
     end
 
-    if physical
-        ampli_rho = sympy.zeros(1,o_max)
-        for i_ord in 1:o_max # Disregarding constant terms
-            for i_monom in 1:aexp.get(i_ord)
-                i_set = aexp.get(aexp.get([i_ord i_monom]))
-                ampli_rho[i_ord] += DP.W[1,i_set]*ρ^i_ord/2^i_ord
-            end
-        end
-        t2 = time_ns()
-        println("Backbone calculation ended")
-        println("Elapsed time: $((t2-t1)/1.0e9) s")
-        println("")
-        return omega_rho, ampli_rho
-    end
-
     t2 = time_ns()
     println("Backbone calculation ended")
     println("Elapsed time: $((t2-t1)/1.0e9) s")
     println("")
     return omega_rho
+end
+
+function physical_amplitudes_CNF(DP::parametrisation_struct, aexp::multiexponent_struct, o_max::Int64, physical::Bool = false)
+    t1 = time_ns()
+    println("Physical amplitudes calculation started")
+
+    ρ = symbols("ρ", real=true)
+
+    ampli_rho = sympy.zeros(1,o_max)
+    for i_ord in 1:o_max # Disregarding constant terms
+        for i_monom in 1:aexp.get(i_ord)
+            i_set = aexp.get(aexp.get([i_ord i_monom]))
+            ampli_rho[i_ord] += DP.W[1,i_set]*ρ^i_ord/2^i_ord
+        end
+    end
+
+    t2 = time_ns()
+    println("Physical amplitudes calculation ended")
+    println("Elapsed time: $((t2-t1)/1.0e9) s")
+    println("")
+    return ampli_rho
 end 
