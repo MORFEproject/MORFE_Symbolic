@@ -104,7 +104,7 @@ function recursive_C2R!(Iv::Vector{Int64}, p::Int64, pos::Int64, posinit::Int64,
             Av1[iz] += 1
             coeff2 = im*coeff/2
             Av2[iz+nzhalf] += 1
-        elseif iz <= DP.n_aut1
+        elseif iz <= DP.n_aut
             coeff1 = coeff/2
             Av1[iz-nzhalf] += 1
             coeff2 = -im*coeff/2

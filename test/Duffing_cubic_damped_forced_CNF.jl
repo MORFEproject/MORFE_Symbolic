@@ -210,7 +210,7 @@ aexp = init_multiexponent_struct(n_rom,o)
 # this is a structure that will contain the solution of each step
 # of the parametrisation method
 # here it is only initialised with zeros
-DP = init_parametrisation_struct(n_full,n_rom,aexp.n_sets,n_aut)
+DP = init_parametrisation_struct(n_full,n_rom,aexp.n_sets,n_aut,o)
 # DP.W is a (n_full×n_sets) matrix whose colums contain the mapping 
 # relating to each monomial 
 # Y = ∑  DP.W[:,I]*z^aexp[I,:]
@@ -230,7 +230,7 @@ DP = init_parametrisation_struct(n_full,n_rom,aexp.n_sets,n_aut)
 # let us assume that the rom is an unforced oscillator 
 # then the conditions of near resonances should be written as:
 # conditions = [λ₀[2] =>-λ₀[1]]
-conditions = [λ₀[2] =>-λ₀[1],λ₀[4] =>-λ₀[3], 3*λ₀[3] =>λ₀[1]]
+conditions = [λ₀[2] =>-λ₀[1],λ₀[4] =>-λ₀[3], λ₀[3] =>λ₀[1]]
 
 σ₀ = transpose(aexp.mat)*λ₀
 
@@ -465,15 +465,21 @@ end
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #          Substitutions           #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-substitutions = [[Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc], [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]]
+h_val = 1
+omega_val = 1
+xi_val = 0.02
+h = symbols("h", real = true)
+kappa_val = 0.5
+
+substitutions = [[Dict(h => h_val) for i=1:n_osc], [Dict(ξ[i] => xi_val) for i=1:n_osc], [Dict(δ[i] => sqrt(1-xi_val^2)) for i=1:n_osc], [Dict(ω[i] => omega_val) for i=1:n_osc], [Dict(symbols("Ω",positive=true) => omega_val/3.0) for i=1:n_osc],[Dict(symbols("κ",positive=true) => kappa_val) for i=1:n_osc]]
 substitutions!(DP, substitutions)
-#reduced_dynamics_substitutions!(DP, substitutions)
+reduced_dynamics_substitutions!(DP, substitutions)
 nonlinear_mappings_substitutions!(DP, substitutions)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #             Printing             #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-#reduced_dynamics_latex_output(DP, aexp, "./test/Duffing_cubic_damped_forced_CNF_output.txt")
+# reduced_dynamics_latex_output(DP, aexp, "./test/Duffing_cubic_damped_forced_CNF_output.txt")
 # nonlinear_mappings_latex_output(DP, aexp, "./test/Duffing_cubic_damped_forced_CNF_output.txt")
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -482,7 +488,22 @@ nonlinear_mappings_substitutions!(DP, substitutions)
 # real, imaginary = polar_realification(DP, aexp)
 # polar_realifed_reduced_dynamics_output(real, imaginary, "./test/Duffing_cubic_damped_forced_CNF_output.txt")
 
-amplitude = physical_amplitudes_CNF(DP, aexp, o)
-physical_amplitudes_output(amplitude, "./test/Duffing_cubic_damped_forced_CNF_output.txt")
+# amplitude = physical_amplitudes_CNF(DP, aexp, o)
+# physical_amplitudes_output(amplitude, "./test/Duffing_cubic_damped_forced_CNF_output.txt")
 
-# cartesian_realification!(DP, aexp, n_aux)
+cartesian_realification!(DP, aexp, n_aux)
+open("./test/Duffing_cubic_damped_forced_CNF_output_matlab.txt", "a") do file
+    write(file, "Primary resonance:\n")
+    write(file, "Reduced dynamics:\n")
+    for i = 1:2
+        for j in eachindex(DP.fr[1,:]) 
+            write(file, replace(replace(latexify(simplify(DP.fr[i,j]))[2:end-1], "I" => "1i"), "\\cdot" => "*")*"\n")
+        end
+    end
+    write(file, "Nonlinear mappings:\n")
+    for i = 1:2
+        for j in eachindex(DP.Wr[1,:])
+            write(file, replace(replace(latexify(simplify(DP.Wr[i,j]))[2:end-1], "I" => "1i"), "\\cdot" => "*")*"\n")
+        end
+    end
+end 

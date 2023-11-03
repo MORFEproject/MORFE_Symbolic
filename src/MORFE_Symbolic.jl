@@ -112,7 +112,7 @@ module MORFE_Symbolic
                 end
                 DP.subs[i][key] = substituted[1]
             end
-            println("   Subsitution $(i)/$(length(DP.subs)) OK!")
+            println("   Substitution $(i)/$(length(DP.subs)) OK!")
         end
         t2 = time_ns()
         println("Elapsed time: $((t2-t1)/1.0e9) s")
