@@ -78,6 +78,7 @@ function cartesian_realification!(DP::parametrisation_struct, aexp::multiexponen
         DP.fr[i+nzfhalf,:] = imag(DP.fr[i,:])
         DP.fr[i,:] = real(DP.fr[i,:])
     end
+    DP.Wr = real(DP.Wr)
 
     t2 = time_ns()
     println("Cartesian realification ended")

@@ -7,6 +7,7 @@ module MORFE_Symbolic
     include("right_hand_side.jl")
     include("basic_functionalities.jl")
     include("realification.jl")
+    include("matcont.jl")
     
     export create_gen_vec,create_pos_vec
     export mysimp,mysub
@@ -17,6 +18,7 @@ module MORFE_Symbolic
     export compute_order_zero,generalised_eigenproblem,solve_homological!
     export substitutions!, reduced_dynamics_substitutions!, nonlinear_mappings_substitutions!
     export polar_realification, cartesian_realification!, backbone_CNF, physical_amplitudes_CNF
+    export matcont 
 
     #~~~~~~~~~~~~~~~~~#
     #           compute                #
