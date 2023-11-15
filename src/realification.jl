@@ -221,4 +221,11 @@ function physical_amplitudes_CNF(DP::parametrisation_struct, aexp::multiexponent
     println("Elapsed time: $((t2-t1)/1.0e9) s")
     println("")
     return ampli_rho
-end 
+end
+
+function modal_coordinates_from_physical_coordinates!(DP::parametrisation_struct, eigenvecs, n_osc)
+    red_eigenvecs = eigenvecs[1:2*n_osc,:]
+    for i in 1:length(DP.W[1,:])
+        DP.Wmodal[1:2*n_osc,i] = red_eigenvecs \ DP.W[1:2*n_osc,i]
+    end
+end

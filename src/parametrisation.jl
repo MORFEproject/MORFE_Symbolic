@@ -1,9 +1,10 @@
 mutable struct parametrisation_struct
     RHS_d::Matrix{Sym}
     RHS_Q::Matrix{Sym}
-    W::Matrix{Sym}    
+    W::Matrix{Sym}
     Ws::Matrix{Sym}
     Wr::Matrix{Sym}
+    Wmodal::Matrix{Sym}
     f::Matrix{Sym}
     fs::Matrix{Sym}
     fr::Matrix{Sym}
@@ -28,7 +29,7 @@ function init_parametrisation_struct(n_full::Int64,n_rom::Int64,n_sets::Int64,n_
     vec_subs=[Dict(Sym(0)=>Sym(0));Dict(Sym(0)=>Sym(0))]
     #
     return parametrisation_struct(
-        0*mat_Nxns,0*mat_Nxns,0*mat_Nxns,0*mat_Nxns,0*mat_Nxns,
+        0*mat_Nxns,0*mat_Nxns,0*mat_Nxns,0*mat_Nxns,0*mat_Nxns,0*mat_Nxns,
         0*mat_nrxns,0*mat_nrxns,0*mat_nrxns,
         0*vec_1xns,0*mat_naxns,
         0*mat_Nxna,transpose(mat_Nxna),

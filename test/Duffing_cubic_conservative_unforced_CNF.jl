@@ -185,7 +185,7 @@ n_nonaut = 0
 n_rom = n_aut + n_nonaut
 #
 # order of the expansion
-o = 25
+o = 7
 #
 # initialise aexp
 # this is a structure containing information about all the sets
@@ -211,7 +211,7 @@ aexp = init_multiexponent_struct(n_rom,o)
 # this is a structure that will contain the solution of each step
 # of the parametrisation method
 # here it is only initialised with zeros
-DP = init_parametrisation_struct(n_full,n_rom,aexp.n_sets,n_aut)
+DP = init_parametrisation_struct(n_full,n_rom,aexp.n_sets,n_aut,o)
 # DP.W is a (n_full×n_sets) matrix whose colums contain the mapping 
 # relating to each monomial 
 # Y = ∑  DP.W[:,I]*z^aexp[I,:]
@@ -464,6 +464,9 @@ substitutions = [[Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc], [Dict(2*ξ[i
 substitutions!(DP, substitutions)
 reduced_dynamics_substitutions!(DP, substitutions)
 nonlinear_mappings_substitutions!(DP, substitutions)
+
+# modal_coordinates_from_physical_coordinates!(DP,yR,n_osc)
+# nonlinear_mappings_latex_output(DP, aexp, "./test/Duffing_cubic_conservative_unforced_CNF_output.txt", result = "modal")
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #             Printing             #

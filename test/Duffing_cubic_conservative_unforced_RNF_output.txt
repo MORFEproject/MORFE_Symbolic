@@ -8,3 +8,9 @@ Nonlinear mappings:
 y_{1} &= z_{1} + z_{2} + \frac{h}{8 \omega_{1}^{2}} z_{1}^{3} + \frac{h}{8 \omega_{1}^{2}} z_{2}^{3} + \frac{h^{2}}{64 \omega_{1}^{4}} z_{1}^{5} - \frac{21 h^{2}}{64 \omega_{1}^{4}} z_{1}^{4} z_{2} - \frac{21 h^{2}}{64 \omega_{1}^{4}} z_{1} z_{2}^{4} + \frac{h^{2}}{64 \omega_{1}^{4}} z_{2}^{5} + \frac{h^{3}}{512 \omega_{1}^{6}} z_{1}^{7} - \frac{109 h^{3}}{512 \omega_{1}^{6}} z_{1}^{6} z_{2} + \frac{357 h^{3}}{512 \omega_{1}^{6}} z_{1}^{5} z_{2}^{2} + \frac{357 h^{3}}{512 \omega_{1}^{6}} z_{1}^{2} z_{2}^{5} - \frac{109 h^{3}}{512 \omega_{1}^{6}} z_{1} z_{2}^{6} + \frac{h^{3}}{512 \omega_{1}^{6}} z_{2}^{7}\\
 y_{2} &= \mathit{i} \omega_{1} z_{1} - \mathit{i} \omega_{1} z_{2} + \mathit{i} \frac{3 h}{8 \omega_{1}} z_{1}^{3} - \mathit{i} \frac{3 h}{8 \omega_{1}} z_{2}^{3} + \mathit{i} \frac{5 h^{2}}{64 \omega_{1}^{3}} z_{1}^{5} - \mathit{i} \frac{27 h^{2}}{64 \omega_{1}^{3}} z_{1}^{4} z_{2} + \mathit{i} \frac{27 h^{2}}{64 \omega_{1}^{3}} z_{1} z_{2}^{4} - \mathit{i} \frac{5 h^{2}}{64 \omega_{1}^{3}} z_{2}^{5} + \mathit{i} \frac{7 h^{3}}{512 \omega_{1}^{5}} z_{1}^{7} - \mathit{i} \frac{233 h^{3}}{512 \omega_{1}^{5}} z_{1}^{6} z_{2} + \mathit{i} \frac{195 h^{3}}{512 \omega_{1}^{5}} z_{1}^{5} z_{2}^{2} - \mathit{i} \frac{195 h^{3}}{512 \omega_{1}^{5}} z_{1}^{2} z_{2}^{5} + \mathit{i} \frac{233 h^{3}}{512 \omega_{1}^{5}} z_{1} z_{2}^{6} - \mathit{i} \frac{7 h^{3}}{512 \omega_{1}^{5}} z_{2}^{7}
 \end{align}
+Nonlinear mappings to modal coordinates:
+\begin{align}
+y_{1} &= z_{1} + \frac{h}{4 \omega_{1}^{2}} z_{1}^{3} - \frac{h}{8 \omega_{1}^{2}} z_{2}^{3}\\
+y_{2} &= z_{2} - \frac{h}{8 \omega_{1}^{2}} z_{1}^{3} + \frac{h}{4 \omega_{1}^{2}} z_{2}^{3}\\
+y_{3} &= \mathit{i} 0
+\end{align}

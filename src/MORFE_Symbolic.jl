@@ -18,6 +18,7 @@ module MORFE_Symbolic
     export compute_order_zero,generalised_eigenproblem,solve_homological!
     export substitutions!, reduced_dynamics_substitutions!, nonlinear_mappings_substitutions!
     export polar_realification, cartesian_realification!, backbone_CNF, physical_amplitudes_CNF
+    export modal_coordinates_from_physical_coordinates!
     export matcont 
 
     #~~~~~~~~~~~~~~~~~#
