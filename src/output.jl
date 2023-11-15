@@ -81,16 +81,16 @@ function latex_code_for_polynomial_expression(expr_coeffs::Vector{Sym}, expr_mon
             expr_coeffs[j] = -expr_coeffs[j]
             sign_flag = true
         end
-        if !(expr_coeffs[j]/im).has(Sym(im))
-            expr_coeffs[j] = sympy.Mul(Sym(im), expr_coeffs[j]/im, evaluate=False)
+        if !(simplify(expr_coeffs[j]/im)).has(Sym(im))
+            expr_coeffs[j] = sympy.Mul(Sym(im), simplify(expr_coeffs[j]/im), evaluate=False)
         end
         # In the next lines the Sym("a") is necessary so that -i is not displayed as \left( -i \right)
         if monom == 1
-            latex_result = latexify(sympy.Add(Sym("a"), expr_coeffs[j], evaluate=False), cdot = false)[3:end-1]
+            latex_result = latexify(sympy.Add(Sym("a"), expr_coeffs[j], evaluate=False), cdot = false, safescripts = true)[3:end-1]
         elseif expr_coeffs[j] == 1
-            latex_result = latexify(sympy.Add(Sym("a"), monom, evaluate=False), cdot = false)[3:end-1]
+            latex_result = latexify(sympy.Add(Sym("a"), monom, evaluate=False), cdot = false, safescripts = true)[3:end-1]
         else
-            latex_result = latexify(sympy.Add(Sym("a"), sympy.Mul(expr_coeffs[j], monom, evaluate=False), evaluate=False), cdot = false)[3:end-1]
+            latex_result = latexify(sympy.Add(Sym("a"), sympy.Mul(expr_coeffs[j], monom, evaluate=False), evaluate=False), cdot = false, safescripts = true)[3:end-1]
         end
         if sign_flag
             latex_result = " -"*latex_result[3:end]
@@ -235,8 +235,8 @@ function polar_realifed_reduced_dynamics_output(real, imaginary, output_file = n
     println("Printing polar realified reduced dynamics")
     
     latex_output = "\\begin{align}"
-    latex_output *= "\n\\dot{\\rho} &= " * latexify(real, cdot = false)[2:end-1] * "\\\\"
-    latex_output *= "\n\\rho \\dot{\\theta} &= " * latexify(imaginary, cdot = false)[2:end-1] * "\\\\"
+    latex_output *= "\n\\dot{\\rho} &= " * latexify(real, cdot = false, safescripts = true)[2:end-1] * "\\\\"
+    latex_output *= "\n\\rho \\dot{\\theta} &= " * latexify(imaginary, cdot = false, safescripts = true)[2:end-1] * "\\\\"
     latex_output = replace(latex_output, "z1" => "z_{1}")
     latex_output = replace(latex_output, "z2" => "z_{2}")
     latex_output = latex_output[1:end-2] * "\n\\end{align}\n"
@@ -321,10 +321,10 @@ function physical_amplitudes_output(ampli_rho, output_file = nothing; file_mode:
     println("Printing physical amplitudes")
     latex_output = "\\begin{equation}"
 
-    latex_output *= "\nu_{max} ="
+    latex_output *= "\nu_{max} = "
     for i in eachindex(ampli_rho)
         if ampli_rho[i] != 0
-            latex_output *= latexify(ampli_rho[i])[2:end-1] * " + "
+            latex_output *= latexify(ampli_rho[i], cdot = false, safescripts = true)[2:end-1] * " + "
         end
     end
     latex_output = replace(latex_output, "I" => "\\mathit{i}")

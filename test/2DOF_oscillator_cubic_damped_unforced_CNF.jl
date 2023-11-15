@@ -125,7 +125,7 @@ function RHS_Lin(Y)
     # first n_osc equations is M*Uₜ = M*V
     F[1:n_osc] = M*V
     # second n_osc equations is M*Vₜ = -C*V -K*U ...
-    F[n_osc+1:2*n_osc] = -K*U
+    F[n_osc+1:2*n_osc] = -C*V -K*U
     # last n_aux equations are the algebraic ones defining the auxiliary variables
     F[2*n_osc+1:2*n_osc+n_aux] = R
     return F
@@ -203,7 +203,7 @@ n_nonaut = 0
 n_rom = n_aut + n_nonaut
 #
 # order of the expansion
-o = 5
+o = 3
 #
 # initialise aexp
 # this is a structure containing information about all the sets
@@ -482,13 +482,11 @@ nonlinear_mappings_substitutions!(DP, substitutions)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #             Printing             #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-reduced_dynamics_latex_output(DP, aexp, "./test/2DOF_oscillator_cubic_conservative_unforced_CNF_output.txt")
-nonlinear_mappings_latex_output(DP, aexp, "./test/2DOF_oscillator_cubic_conservative_unforced_CNF_output.txt")
+reduced_dynamics_latex_output(DP, aexp, "./test/2DOF_oscillator_cubic_damped_unforced_CNF_output.txt")
+nonlinear_mappings_latex_output(DP, aexp, "./test/2DOF_oscillator_cubic_damped_unforced_CNF_output.txt")
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #          Realification           #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 omega, xi = backbone_CNF(DP, aexp)
-amplitude = physical_amplitudes_CNF(DP, aexp)
-backbone_output(omega, "./test/2DOF_oscillator_cubic_conservative_unforced_CNF_output.txt")
-physical_amplitudes_output(amplitude, "./test/2DOF_oscillator_cubic_conservative_unforced_CNF_output.txt")
+backbone_output(omega, "./test/2DOF_oscillator_cubic_damped_unforced_CNF_output.txt")
