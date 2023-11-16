@@ -231,6 +231,7 @@ DP = init_parametrisation_struct(n_full,n_rom,aexp.n_sets,n_aut,o)
 # then the conditions of near resonances should be written as:
 # conditions = [λ₀[2] =>-λ₀[1]]
 conditions = [λ₀[2] =>-λ₀[1],λ₀[4] =>-λ₀[3], λ₀[3] =>λ₀[1]]
+conditions = [λ₀[2] =>-λ₀[1],λ₀[4] =>-λ₀[3], λ₀[3] =>λ₀[1]]
 
 σ₀ = transpose(aexp.mat)*λ₀
 
@@ -477,6 +478,7 @@ substitutions = [[Dict(h => h_val) for i=1:n_osc], [Dict(ξ[i] => xi_val) for i=
 #                    print_reduced_dynamics = true, print_nonlinear_mappings = true)
 substitutions!(DP, substitutions)
 reduced_dynamics_substitutions!(DP, substitutions)
+# reduced_dynamics_latex_output(DP, aexp, "./test/Duffing_cubic_damped_forced_CNF_output.txt")
 # reduced_dynamics_latex_output(DP, aexp, "./test/Duffing_cubic_damped_forced_CNF_output.txt")
 
 nonlinear_mappings_substitutions!(DP, substitutions)

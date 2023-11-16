@@ -204,17 +204,27 @@ function backbone_CNF(DP::parametrisation_struct, aexp::multiexponent_struct)
     return omega_rho, xi_rho
 end
 
+# Function only for one master mode without damping
 function physical_amplitudes_CNF(DP::parametrisation_struct, aexp::multiexponent_struct)
+    get_re_im = sympy.core.expr.Expr.as_real_imag
+    trigsimp = sympy.core.expr.Expr.trigsimp
+
     t1 = time_ns()
     println("Physical amplitudes calculation started")
 
-    ρ = symbols("ρ", real=true)
+    θ = symbols("θ", real=true); ρ = symbols("ρ", positive=true)
 
-    ampli_rho = sympy.zeros(1,DP.order)
-    for i_ord in 1:DP.order # Disregarding constant terms
-        for i_monom in 1:aexp.get(i_ord)
-            i_set = aexp.get(aexp.get([i_ord i_monom]))
-            ampli_rho[i_ord] += DP.W[1,i_set]*ρ^i_ord/2^i_ord
+    z = [ρ/2*exp(im*θ), ρ/2*exp(-im*θ)]
+    real_part = sympy.zeros(1,DP.order); imaginary_part = sympy.zeros(1,DP.order)
+    for i_set in 2:length(DP.W[1,:]) # Disregarding constant terms
+        order = sum(aexp.mat[:,i_set])
+        term = DP.W[1,i_set]*ρ^order/2^order
+        term = get_re_im(term.expand(complex = true))
+        real_part[order] += term[1]
+        if aexp.mat[1,i_set] >= aexp.mat[2,i_set]
+            imaginary_part[order] += term[2]
+        else
+            imaginary_part[order] -= term[2]
         end
     end
 
@@ -222,5 +232,25 @@ function physical_amplitudes_CNF(DP::parametrisation_struct, aexp::multiexponent
     println("Physical amplitudes calculation ended")
     println("Elapsed time: $((t2-t1)/1.0e9) s")
     println("")
-    return ampli_rho
-end 
+
+    if sum(real_part) == 0
+        for order in 1:DP.order
+            imaginary_part[order] = simplify(imaginary_part[order])
+        end
+        return imaginary_part
+    elseif sum(imaginary_part) == 0
+        for order in 1:DP.order
+            real_part[order] = simplify(real_part[order])
+        end
+        return real_part
+    else
+        throw(ErrorException("There is an imaginary part on the displacement field."))
+    end
+end
+
+function modal_coordinates_from_physical_coordinates!(DP::parametrisation_struct, eigenvecs, n_osc)
+    red_eigenvecs = eigenvecs[1:2*n_osc,:]
+    for i in 1:length(DP.W[1,:])
+        DP.Wmodal[1:2*n_osc,i] = red_eigenvecs \ DP.W[1:2*n_osc,i]
+    end
+end
