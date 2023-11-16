@@ -239,10 +239,10 @@ function physical_amplitudes_CNF(DP::parametrisation_struct, aexp::multiexponent
         end
         return imaginary_part
     elseif sum(imaginary_part) == 0
-        return real_part
         for order in 1:DP.order
             real_part[order] = simplify(real_part[order])
         end
+        return real_part
     else
         throw(ErrorException("There is an imaginary part on the displacement field."))
     end
