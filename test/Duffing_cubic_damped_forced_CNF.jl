@@ -405,9 +405,6 @@ for ind_set1 = 1:n_aut
     DP.YLᵀA[ind_set1,:] = yLsᵀ*sys.A    #transpose(yL[:,ind_set1])*sys.A    
 end
 
-
-
-
 #~~~~~~~~~~~~~~~~~#
 #           Order 1                  #
 #~~~~~~~~~~~~~~~~~#

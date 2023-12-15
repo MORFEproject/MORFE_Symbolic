@@ -86,11 +86,16 @@ function latex_code_for_polynomial_expression(expr_coeffs::Vector{Sym}, expr_mon
         end
         # In the next lines the Sym("a") is necessary so that -i is not displayed as \left( -i \right)
         if monom == 1
-            latex_result = latexify(sympy.Add(Sym("a"), expr_coeffs[j], evaluate=False), cdot = false, safescripts = true)[3:end-1]
+            latex_result = latexify(sympy.Add(Sym("a"), expr_coeffs[j], evaluate=False), cdot = false, safescripts = true)
         elseif expr_coeffs[j] == 1
-            latex_result = latexify(sympy.Add(Sym("a"), monom, evaluate=False), cdot = false, safescripts = true)[3:end-1]
+            latex_result = latexify(sympy.Add(Sym("a"), monom, evaluate=False), cdot = false, safescripts = true)
         else
-            latex_result = latexify(sympy.Add(Sym("a"), sympy.Mul(expr_coeffs[j], monom, evaluate=False), evaluate=False), cdot = false, safescripts = true)[3:end-1]
+            latex_result = latexify(sympy.Add(Sym("a"), sympy.Mul(expr_coeffs[j], monom, evaluate=False), evaluate=False), cdot = false, safescripts = true)
+        end
+        if latex_result[2] == 'a'
+            latex_result = latex_result[3:end-1]
+        else
+            latex_result = " + " * latex_result[2:end-5]
         end
         if sign_flag
             latex_result = " -"*latex_result[3:end]
@@ -200,7 +205,11 @@ function nonlinear_mappings_latex_output(DP::parametrisation_struct, aexp::multi
         expr = poly_from_expr(u[i], gens = z)
         expr_monoms = expr[1].monoms()
         expr_coeffs = expr[1].coeffs()
-        latex_output *= "\ny_{$(i)} &="
+        if i <= length(u)/2
+            latex_output *= "\nu_{$(i)} &="
+        else
+            latex_output *= "\nv_{$(i-Int(length(u)/2))} &="
+        end 
         latex_output = latex_code_for_polynomial_expression(expr_coeffs, expr_monoms, latex_output, normal_coordinate)
         latex_output *= "\\\\"
     end
