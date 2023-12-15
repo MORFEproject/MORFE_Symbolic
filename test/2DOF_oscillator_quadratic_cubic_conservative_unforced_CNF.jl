@@ -488,7 +488,7 @@ nonlinear_mappings_latex_output(DP, aexp, "./test/2DOF_oscillator_quadratic_cubi
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #          Realification           #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-omega, xi = backbone_CNF(DP, aexp)
-amplitude = physical_amplitudes_CNF(DP, aexp)
-backbone_output(omega, "./test/2DOF_oscillator_quadratic_cubic_conservative_unforced_CNF_output.txt")
-physical_amplitudes_output(amplitude, "./test/2DOF_oscillator_quadratic_cubic_conservative_unforced_CNF_output.txt")
+# omega, xi = backbone_CNF(DP, aexp)
+# amplitude = physical_amplitudes_CNF(DP, aexp)
+# backbone_output(omega, "./test/2DOF_oscillator_quadratic_cubic_conservative_unforced_CNF_output.txt")
+# physical_amplitudes_output(amplitude, "./test/2DOF_oscillator_quadratic_cubic_conservative_unforced_CNF_output.txt")

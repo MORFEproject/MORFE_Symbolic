@@ -82,7 +82,7 @@ K = diagm(ω.^2)
 #
 # or simply create a diagonalised damping matrix
 # generic diagonal damping:
-ξ = create_pos_vec("ξ",n_osc)
+ξ = create_gen_vec("ξ",n_osc)
 ζ = 2*ξ.*ω
 C = diagm(ζ)
 # for the sake of readability, it is useful to specify that each oscillator is underdamped
@@ -203,7 +203,7 @@ n_nonaut = 0
 n_rom = n_aut + n_nonaut
 #
 # order of the expansion
-o = 3
+o = 5
 #
 # initialise aexp
 # this is a structure containing information about all the sets
@@ -230,6 +230,11 @@ aexp = init_multiexponent_struct(n_rom,o)
 # of the parametrisation method
 # here it is only initialised with zeros
 DP = init_parametrisation_struct(n_full,n_rom,aexp.n_sets,n_aut,o)
+
+# Small damping hypotheses
+DP.subs = [DP.subs;Dict(ξ[1]^2=>0);Dict(ξ[1]^3=>0);Dict(ξ[1]^5=>0);Dict(ξ[1]^7=>0);Dict(ξ[1]^9=>0);Dict(ξ[1]^11=>0);Dict(ξ[1]^13=>0)]
+DP.subs = [DP.subs;Dict(ξ[2]^2=>0);Dict(ξ[2]^3=>0);Dict(ξ[2]^5=>0);Dict(ξ[2]^7=>0);Dict(ξ[2]^9=>0);Dict(ξ[2]^11=>0);Dict(ξ[2]^13=>0)]
+
 # DP.W is a (n_full×n_sets) matrix whose colums contain the mapping 
 # relating to each monomial 
 # Y = ∑  DP.W[:,I]*z^aexp[I,:]
@@ -474,10 +479,10 @@ end
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #          Substitutions           #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-substitutions = [[Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc], [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]]
-substitutions!(DP, substitutions)
-reduced_dynamics_substitutions!(DP, substitutions)
-nonlinear_mappings_substitutions!(DP, substitutions)
+# substitutions = [[Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc], [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]]
+substitutions!(DP, [])
+reduced_dynamics_substitutions!(DP, [])
+nonlinear_mappings_substitutions!(DP, [])
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #             Printing             #

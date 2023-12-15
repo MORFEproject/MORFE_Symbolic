@@ -203,7 +203,7 @@ n_nonaut = 0
 n_rom = n_aut + n_nonaut
 #
 # order of the expansion
-o = 5
+o = 7
 #
 # initialise aexp
 # this is a structure containing information about all the sets
@@ -489,6 +489,6 @@ nonlinear_mappings_latex_output(DP, aexp, "./test/2DOF_oscillator_cubic_conserva
 #          Realification           #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 omega, xi = backbone_CNF(DP, aexp)
-amplitude = physical_amplitudes_CNF(DP, aexp)
+# amplitude = physical_amplitudes_CNF(DP, aexp)
 backbone_output(omega, "./test/2DOF_oscillator_cubic_conservative_unforced_CNF_output.txt")
-physical_amplitudes_output(amplitude, "./test/2DOF_oscillator_cubic_conservative_unforced_CNF_output.txt")
+# physical_amplitudes_output(amplitude, "./test/2DOF_oscillator_cubic_conservative_unforced_CNF_output.txt")
