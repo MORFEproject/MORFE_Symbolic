@@ -144,8 +144,8 @@ C0 = sympy.zeros(n_full,1)[:,1]
 C⁺ₑₓₜ = sympy.zeros(n_full,1)[:,1]
 C⁻ₑₓₜ = sympy.zeros(n_full,1)[:,1]
 # to have a κ*cosin(Ωt) excitation on U₁
-C⁺ₑₓₜ[n_osc+1] = -1/Sym(2)*symbols("κ",positive=true)
-C⁻ₑₓₜ[n_osc+1] = -1/Sym(2)*symbols("κ",positive=true)
+C⁺ₑₓₜ[n_osc+1] = 1/Sym(2)*symbols("κ",positive=true)
+C⁻ₑₓₜ[n_osc+1] = 1/Sym(2)*symbols("κ",positive=true)
 # to have a κ*sin(Ωt) excitation on U₁
 # C⁺ₑₓₜ[n_osc+1] = + im/Sym(2)*symbols("κ",positive=true)
 # C⁻ₑₓₜ[n_osc+1] = -  im/Sym(2)*symbols("κ",positive=true)
@@ -181,7 +181,7 @@ n_nonaut = 0
 n_rom = n_aut + n_nonaut
 #
 # order of the expansion
-o = 7
+o = 9
 #
 # initialise aexp
 # this is a structure containing information about all the sets
@@ -286,8 +286,8 @@ ind_setG0 = aexp.get(aexp.get([p0 ind_set0]))
 DP.W[:,ind_setG0] = Y0
 for i_full=1:n_full
     if DP.W[i_full,ind_setG0] != 0
-        DP.Ws[i_full,ind_setG0] = Sym("W"*string(i_full)*"|"*string(ind_setG0))
-        DP.subs = [DP.subs;Dict(Sym("W"*string(i_full)*"|"*string(ind_setG0))=>DP.W[i_full,ind_setG0])]
+        DP.Ws[i_full,ind_setG0] = Sym("W"*string(i_full)*"0"*string(ind_setG0))
+        DP.subs = [DP.subs;Dict(Sym("W"*string(i_full)*"0"*string(ind_setG0))=>DP.W[i_full,ind_setG0])]
     end
 end
 # if the function compute_order_zero struggles
@@ -372,21 +372,21 @@ for ind_set1 = 1:n_aut
     DP.W[:,ind_setG1] = yR[:,ind_set1]
     for i_full=1:n_full
         if DP.W[i_full,ind_setG1] != 0
-            DP.Ws[i_full,ind_setG1] = Sym("W"*string(i_full)*"|"*string(ind_setG1))
-            DP.subs = [DP.subs;Dict(Sym("W"*string(i_full)*"|"*string(ind_setG1))=>DP.W[i_full,ind_setG1])]
+            DP.Ws[i_full,ind_setG1] = Sym("W"*string(i_full)*"0"*string(ind_setG1))
+            DP.subs = [DP.subs;Dict(Sym("W"*string(i_full)*"0"*string(ind_setG1))=>DP.W[i_full,ind_setG1])]
         end
     end
     # assign the chosen master eigenvalue to the corresponding DP.f
     DP.f[ind_set1,ind_setG1] = λ[ind_set1]
-    DP.fs[ind_set1,ind_setG1] = Sym("λ_"*string(ind_set1))
-    DP.subs = [DP.subs;Dict(Sym("λ_"*string(ind_set1))=>λ[ind_set1])]
+    DP.fs[ind_set1,ind_setG1] = Sym("λ"*string(ind_set1))
+    DP.subs = [DP.subs;Dict(Sym("λ"*string(ind_set1))=>λ[ind_set1])]
     # compute the matrix A*yR[aut]
     # which will be used for the top right border of the homological matrix
     yRs = 0*yR[:,ind_set1]
     for i_full=1:n_full
         if yR[i_full,ind_set1] != 0
-            yRs[i_full] = Sym("yR"*string(i_full)*"|"*string(ind_set1))
-            DP.subs = [DP.subs;Dict(Sym("yR"*string(i_full)*"|"*string(ind_set1))=>yR[i_full,ind_set1])]
+            yRs[i_full] = Sym("yR"*string(i_full)*"0"*string(ind_set1))
+            DP.subs = [DP.subs;Dict(Sym("yR"*string(i_full)*"0"*string(ind_set1))=>yR[i_full,ind_set1])]
         end
     end
     DP.AYR[:,ind_set1] = sys.A*yRs# yR[:,ind_set1]
@@ -395,8 +395,8 @@ for ind_set1 = 1:n_aut
     yLsᵀ = 0*transpose(yL[:,ind_set1])
     for i_full=1:n_full
         if yL[i_full,ind_set1] != 0
-            yLsᵀ[i_full] = Sym("yL"*string(i_full)*"|"*string(ind_set1))
-            DP.subs = [DP.subs;Dict(Sym("yL"*string(i_full)*"|"*string(ind_set1))=>yL[i_full,ind_set1])]
+            yLsᵀ[i_full] = Sym("yL"*string(i_full)*"0"*string(ind_set1))
+            DP.subs = [DP.subs;Dict(Sym("yL"*string(i_full)*"0"*string(ind_set1))=>yL[i_full,ind_set1])]
         end
     end
     DP.YLᵀA[ind_set1,:] = yLsᵀ*sys.A    #transpose(yL[:,ind_set1])*sys.A    
@@ -470,7 +470,7 @@ reduced_dynamics_substitutions!(DP, substitutions)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #             Printing             #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-reduced_dynamics_latex_output(DP, aexp, "./test/Duffing_cubic_damped_unforced_CNF_output.txt")
+# reduced_dynamics_latex_output(DP, aexp, "./test/Duffing_cubic_damped_unforced_CNF_output.txt")
 # nonlinear_mappings_latex_output(DP, aexp, "./test/Duffing_cubic_damped_unforced_CNF_output.txt")
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -478,3 +478,12 @@ reduced_dynamics_latex_output(DP, aexp, "./test/Duffing_cubic_damped_unforced_CN
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 # real, imaginary = polar_realification(DP, aexp)
 # cartesian_realification!(DP, aexp, n_aux)
+
+# omega, xi = backbone_CNF(DP, aexp)
+# amplitude = physical_amplitudes_CNF(DP, aexp)
+
+Mathematica_output(DP, aexp, "./test/Duffing_cubic_damped_unforced_CNF_test", "Output_Mathematica",
+                    print_reduced_dynamics = true, print_nonlinear_mappings = true)#,
+                    # print_backbone = true, omega_rho = omega,
+                    # print_damping = true, xi_rho = xi, 
+                    # print_physical_amplitudes = true, ampli_rho = amplitude)

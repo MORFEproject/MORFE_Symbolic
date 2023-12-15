@@ -4,6 +4,7 @@ push!(LOAD_PATH,joinpath(pwd(),"src"))
 using MORFE_Symbolic
 
 include("./../src/output.jl")
+include("./../src/output.jl")
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #                            Definition of original system                                       #
@@ -130,7 +131,7 @@ function RHS_Quad(Y)
     U = Y[1:n_osc]                        # first n_osc positions is U
     R = Y[2*n_osc+1:2*n_osc+n_aux]      # last n_aux positions are the auxiliary variables
     # define only cubic nonlinearity
-    h = Sym("h")
+    h = symbols("h", real = true)
     # assign to the second n_osc equations
     # la ligne ci-dessous pour quad et cub: commentée
     #F[n_osc+1] = -  h*U[1]*R[1] - g*U[1]*U[1]
@@ -212,6 +213,7 @@ aexp = init_multiexponent_struct(n_rom,o)
 # of the parametrisation method
 # here it is only initialised with zeros
 DP = init_parametrisation_struct(n_full,n_rom,aexp.n_sets,n_aut,o)
+DP = init_parametrisation_struct(n_full,n_rom,aexp.n_sets,n_aut,o)
 # DP.W is a (n_full×n_sets) matrix whose colums contain the mapping 
 # relating to each monomial 
 # Y = ∑  DP.W[:,I]*z^aexp[I,:]
@@ -286,8 +288,8 @@ ind_setG0 = aexp.get(aexp.get([p0 ind_set0]))
 DP.W[:,ind_setG0] = Y0
 for i_full=1:n_full
     if DP.W[i_full,ind_setG0] != 0
-        DP.Ws[i_full,ind_setG0] = Sym("W"*string(i_full)*"|"*string(ind_setG0))
-        DP.subs = [DP.subs;Dict(Sym("W"*string(i_full)*"|"*string(ind_setG0))=>DP.W[i_full,ind_setG0])]
+        DP.Ws[i_full,ind_setG0] = Sym("W"*string(i_full)*"0"*string(ind_setG0))
+        DP.subs = [DP.subs;Dict(Sym("W"*string(i_full)*"0"*string(ind_setG0))=>DP.W[i_full,ind_setG0])]
     end
 end
 # if the function compute_order_zero struggles
@@ -370,21 +372,21 @@ for ind_set1 = 1:n_aut
     DP.W[:,ind_setG1] = yR[:,ind_set1]
     for i_full=1:n_full
         if DP.W[i_full,ind_setG1] != 0
-            DP.Ws[i_full,ind_setG1] = Sym("W"*string(i_full)*"|"*string(ind_setG1))
-            DP.subs = [DP.subs;Dict(Sym("W"*string(i_full)*"|"*string(ind_setG1))=>DP.W[i_full,ind_setG1])]
+            DP.Ws[i_full,ind_setG1] = Sym("W"*string(i_full)*"0"*string(ind_setG1))
+            DP.subs = [DP.subs;Dict(Sym("W"*string(i_full)*"0"*string(ind_setG1))=>DP.W[i_full,ind_setG1])]
         end
     end
     # assign the chosen master eigenvalue to the corresponding DP.f
     DP.f[ind_set1,ind_setG1] = λ[ind_set1]
-    DP.fs[ind_set1,ind_setG1] = Sym("λ_"*string(ind_set1))
-    DP.subs = [DP.subs;Dict(Sym("λ_"*string(ind_set1))=>λ[ind_set1])]
+    DP.fs[ind_set1,ind_setG1] = Sym("λ"*string(ind_set1))
+    DP.subs = [DP.subs;Dict(Sym("λ"*string(ind_set1))=>λ[ind_set1])]
     # compute the matrix A*yR[aut]
     # which will be used for the top right border of the homological matrix
     yRs = 0*yR[:,ind_set1]
     for i_full=1:n_full
         if yR[i_full,ind_set1] != 0
-            yRs[i_full] = Sym("yR"*string(i_full)*"|"*string(ind_set1))
-            DP.subs = [DP.subs;Dict(Sym("yR"*string(i_full)*"|"*string(ind_set1))=>yR[i_full,ind_set1])]
+            yRs[i_full] = Sym("yR"*string(i_full)*"0"*string(ind_set1))
+            DP.subs = [DP.subs;Dict(Sym("yR"*string(i_full)*"0"*string(ind_set1))=>yR[i_full,ind_set1])]
         end
     end
     DP.AYR[:,ind_set1] = sys.A*yRs# yR[:,ind_set1]
@@ -393,8 +395,8 @@ for ind_set1 = 1:n_aut
     yLsᵀ = 0*transpose(yL[:,ind_set1])
     for i_full=1:n_full
         if yL[i_full,ind_set1] != 0
-            yLsᵀ[i_full] = Sym("yL"*string(i_full)*"|"*string(ind_set1))
-            DP.subs = [DP.subs;Dict(Sym("yL"*string(i_full)*"|"*string(ind_set1))=>yL[i_full,ind_set1])]
+            yLsᵀ[i_full] = Sym("yL"*string(i_full)*"0"*string(ind_set1))
+            DP.subs = [DP.subs;Dict(Sym("yL"*string(i_full)*"0"*string(ind_set1))=>yL[i_full,ind_set1])]
         end
     end
     DP.YLᵀA[ind_set1,:] = yLsᵀ*sys.A    #transpose(yL[:,ind_set1])*sys.A    
@@ -464,6 +466,11 @@ substitutions = [[Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc], [Dict(2*ξ[i
 substitutions!(DP, substitutions)
 reduced_dynamics_substitutions!(DP, substitutions)
 nonlinear_mappings_substitutions!(DP, substitutions)
+
+cartesian_realification!(DP, aexp, n_aux)
+
+reduced_dynamics_latex_output(DP, aexp, "./test/Duffing_cubic_conservative_unforced_RNF_output.txt", real=true, normal_coordinate = 'a')
+nonlinear_mappings_latex_output(DP, aexp, "./test/Duffing_cubic_conservative_unforced_RNF_output.txt", real=true, normal_coordinate = 'a')
 
 modal_coordinates_from_physical_coordinates!(DP,yR,n_osc)
 nonlinear_mappings_latex_output(DP, aexp, "./test/Duffing_cubic_conservative_unforced_RNF_output.txt", result = "modal")
