@@ -3,7 +3,7 @@ using SymPy
 include("parametrisation.jl")
 include("multiexponent.jl")
 
-# At present limited to the one master mode with one harmonic excitation case 
+# At present limited to one master mode with one harmonic excitation 
 function polar_realification(DP::parametrisation_struct,aexp::multiexponent_struct)
     get_re_im = sympy.core.expr.Expr.as_real_imag
     trigsimp = sympy.core.expr.Expr.trigsimp
@@ -194,7 +194,7 @@ function backbone_CNF(DP::parametrisation_struct, aexp::multiexponent_struct)
             println("Caution! There seems to be non-imaginary coefficients on the backbone calculation.")
         end
         omega_rho[order] += imag
-        xi_rho[order] += real
+        xi_rho[order] -= real/omega_rho[1]
     end
 
     t2 = time_ns()
