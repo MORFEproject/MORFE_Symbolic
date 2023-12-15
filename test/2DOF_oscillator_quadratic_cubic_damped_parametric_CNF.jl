@@ -140,15 +140,15 @@ function RHS_Quad(Y)
     R = Y[2*n_osc+1:2*n_osc+n_aux]      # last n_aux positions are the auxiliary variables
     # define generic quadratic and cubic nonlinearities
     # CHECK THIS PART!
-    G¹₁₁ = 0 #Sym("G¹₁₁")
-    G²₁₁ = 0;  G¹₁₂ = G²₁₁; #Sym("G²₁₁")
-    G¹₂₂ = 0;  G²₁₂ = G¹₂₂; #Sym("G¹₂₂")
-    G²₂₂ = 0 #Sym("G²₂₂")
-    H¹₁₁₁ = symbols("H1111", real = true)
-    H²₁₁₁ = symbols("H2111", real = true); H¹₁₁₂ = H²₁₁₁;
-    H¹₁₂₂ = symbols("H1122", real = true); H²₁₁₂ = H¹₁₂₂;
-    H¹₂₂₂ = symbols("H1222", real = true); H²₁₂₂ = H¹₂₂₂;
-    H²₂₂₂ = symbols("H2222", real = true)
+    G¹₁₁ = symbols("G¹₁₁", real = true)
+    G²₁₁ = symbols("G²₁₁", real = true);  G¹₁₂ = G²₁₁;
+    G¹₂₂ = symbols("G¹₂₂", real = true);  G²₁₂ = G¹₂₂;
+    G²₂₂ = symbols("G²₂₂", real = true)
+    H¹₁₁₁ = symbols("H¹₁₁₁", real = true)
+    H²₁₁₁ = symbols("H²₁₁₁", real = true); H¹₁₁₂ = H²₁₁₁;
+    H¹₁₂₂ = symbols("H¹₁₂₂", real = true); H²₁₁₂ = H¹₁₂₂;
+    H¹₂₂₂ = symbols("H¹₂₂₂", real = true); H²₁₂₂ = H¹₂₂₂;
+    H²₂₂₂ = symbols("H²₂₂₂", real = true)
     # assign to the second n_osc equations
     F[n_osc+1] = - (G¹₁₁*U[1]^2 + 2*G¹₁₂*U[2]*U[1] + G¹₂₂*U[2]^2) -
                    (H¹₁₁₁*U[1]*R[1] + 3*H¹₁₁₂*U[2]*R[1] + 3*H¹₁₂₂*U[1]*R[2] + H¹₂₂₂*R[2]*U[2])
@@ -166,8 +166,8 @@ C0 = sympy.zeros(n_full,1)[:,1]
 C⁺ₑₓₜ = sympy.zeros(n_full,1)[:,1]
 C⁻ₑₓₜ = sympy.zeros(n_full,1)[:,1]
 # to have a κ*cosin(Ωt) excitation on U₁
-C⁺ₑₓₜ[n_osc+1] = 1/Sym(2)*symbols("κ",positive=true)
-C⁻ₑₓₜ[n_osc+1] = 1/Sym(2)*symbols("κ",positive=true)
+C⁺ₑₓₜ[n_osc+2] = 1/Sym(2)*symbols("κ",positive=true)
+C⁻ₑₓₜ[n_osc+2] = 1/Sym(2)*symbols("κ",positive=true)
 # to have a κ*sin(Ωt) excitation on U₁
 # C⁺ₑₓₜ[n_osc+1] = + im/Sym(2)*symbols("κ",positive=true)
 # C⁻ₑₓₜ[n_osc+1] = -  im/Sym(2)*symbols("κ",positive=true)
@@ -182,9 +182,6 @@ sys = system_struct(extract_Lin(   LHS_Lin,    n_full),
                             extract_Quad(RHS_Quad,n_full),
                             C0,C⁺ₑₓₜ,C⁻ₑₓₜ)
 
-
-
-
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #                            Definition of parametrisation                                      #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -197,13 +194,13 @@ n_aut = 2
 # since the case of multiple forcing frequencies is not treated, the problem is
 # either autonomous or nonautonomous with a single frequency and 2 complex coordinates
 # for this reason, n_nonaut is either 0 or 2
-n_nonaut = 0
+n_nonaut = 2
 #
 # total number complex coordinates in the parametrisation
 n_rom = n_aut + n_nonaut
 #
 # order of the expansion
-o = 5
+o = 3
 #
 # initialise aexp
 # this is a structure containing information about all the sets
@@ -249,7 +246,7 @@ DP = init_parametrisation_struct(n_full,n_rom,aexp.n_sets,n_aut,o)
 # let us assume that the rom is a forced oscillator in a 1:1 resonance with the forcing
 # then the conditions of resonances should be written as:
 # conditions = [λ₀[2] =>-λ₀[1],λ₀[4] =>-λ₀[3],λ₀[3] =>2*λ₀[1]]
-conditions = [λ₀[2] =>-λ₀[1]]
+conditions = [λ₀[2] =>-λ₀[1], λ₀[4] =>-λ₀[3], λ₀[3] =>2*λ₀[1]]
 
 σ₀ = transpose(aexp.mat)*λ₀
 
@@ -425,7 +422,8 @@ end
 
 if n_nonaut>0
     # augment λ with eigenvalues of the nonautonomous part:
-    λ = [λ;im*symbols("Ω",positive=true);-im*symbols("Ω",positive=true)]
+    # λ = [λ;im*symbols("Ω",positive=true);-im*symbols("Ω",positive=true)]
+    λ = [λ;2*λ[1];2*λ[2]]
     λ = reshape(λ,1,n_rom)
     # assign the eigenvalues of the nonautonomous part to f:
     DP.f[n_aut+1,aexp.get(aexp.get([p1 n_aut+1]))] = λ[n_aut+1]
@@ -471,8 +469,8 @@ for p=2:o
     end
 end
 
-Mathematica_output(DP, aexp, "./test/2DOF_cubic_damped_unforced_CNF/", "Output_Mathematica",
-                   print_reduced_dynamics = true, print_nonlinear_mappings = false)
+Mathematica_output(DP, aexp, "./test/2DOF_quadratic_cubic_damped_parametric_CNF/", "Output_Mathematica",
+                   print_reduced_dynamics = true, print_nonlinear_mappings = true)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #          Substitutions           #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -484,11 +482,13 @@ Mathematica_output(DP, aexp, "./test/2DOF_cubic_damped_unforced_CNF/", "Output_M
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #             Printing             #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-# reduced_dynamics_latex_output(DP, aexp, "./test/2DOF_oscillator_cubic_damped_unforced_CNF_output.txt")
-# nonlinear_mappings_latex_output(DP, aexp, "./test/2DOF_oscillator_cubic_damped_unforced_CNF_output.txt")
+# reduced_dynamics_latex_output(DP, aexp, "./test/2DOF_oscillator_quadratic_cubic_damped_parametric_CNF_output.txt")
+# nonlinear_mappings_latex_output(DP, aexp, "./test/2DOF_oscillator_quadratic_cubic_damped_parametric_CNF_output.txt")
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #          Realification           #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 # omega, xi = backbone_CNF(DP, aexp)
-# backbone_output(omega, "./test/2DOF_oscillator_cubic_damped_unforced_CNF_output.txt")
+# amplitude = physical_amplitudes_CNF(DP, aexp)
+# backbone_output(omega, "./test/2DOF_oscillator_cubic_conservative_unforced_CNF_output.txt")
+# physical_amplitudes_output(amplitude, "./test/2DOF_oscillator_cubic_conservative_unforced_CNF_output.txt")

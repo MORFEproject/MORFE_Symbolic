@@ -1,0 +1,6 @@
+Wres = ConstantArray[0, nfull];
+For[ivar = 1, ivar <= nfull, ivar++,
+   For[iset = 1, iset <= nsets, iset++,
+       Wres[[ivar]] += W[[ivar, iset]]*monoms[[iset]];
+   ];
+];

@@ -481,7 +481,7 @@ end
 # omega, xi = backbone_CNF(DP, aexp)
 # amplitude = physical_amplitudes_CNF(DP, aexp)
 
-Mathematica_output(DP, aexp, "./test/Duffing_cubic_damped_unforced_CNF_test", "Output_Mathematica",
+Mathematica_output(DP, aexp, "./test/Duffing_cubic_damped_unforced_CNF", "Output_Mathematica",
                     print_reduced_dynamics = true, print_nonlinear_mappings = true)#,
                     # print_backbone = true, omega_rho = omega,
                     # print_damping = true, xi_rho = xi, 

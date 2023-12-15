@@ -144,11 +144,11 @@ function RHS_Quad(Y)
     G²₁₁ = 0;  G¹₁₂ = G²₁₁; #Sym("G²₁₁")
     G¹₂₂ = 0;  G²₁₂ = G¹₂₂; #Sym("G¹₂₂")
     G²₂₂ = 0 #Sym("G²₂₂")
-    H¹₁₁₁ = symbols("H¹₁₁₁", real = true)
-    H²₁₁₁ = symbols("H²₁₁₁", real = true); H¹₁₁₂ = H²₁₁₁;
-    H¹₁₂₂ = symbols("H¹₁₂₂", real = true); H²₁₁₂ = H¹₁₂₂;
-    H¹₂₂₂ = symbols("H¹₂₂₂", real = true); H²₁₂₂ = H¹₂₂₂;
-    H²₂₂₂ = symbols("H²₂₂₂", real = true)
+    H¹₁₁₁ = symbols("H1111", real = true)
+    H²₁₁₁ = symbols("H2111", real = true); H¹₁₁₂ = H²₁₁₁;
+    H¹₁₂₂ = symbols("H1122", real = true); H²₁₁₂ = H¹₁₂₂;
+    H¹₂₂₂ = symbols("H1222", real = true); H²₁₂₂ = H¹₂₂₂;
+    H²₂₂₂ = symbols("H2222", real = true)
     # assign to the second n_osc equations
     F[n_osc+1] = - (G¹₁₁*U[1]^2 + 2*G¹₁₂*U[2]*U[1] + G¹₂₂*U[2]^2) -
                    (H¹₁₁₁*U[1]*R[1] + 3*H¹₁₁₂*U[2]*R[1] + 3*H¹₁₂₂*U[1]*R[2] + H¹₂₂₂*R[2]*U[2])
@@ -407,8 +407,8 @@ for ind_set1 = 1:n_aut
     yLsᵀ = 0*transpose(yL[:,ind_set1])
     for i_full=1:n_full
         if yL[i_full,ind_set1] != 0
-            yLsᵀ[i_full] = Sym("yL"*string(i_full)*"|"*string(ind_set1))
-            DP.subs = [DP.subs;Dict(Sym("yL"*string(i_full)*"|"*string(ind_set1))=>yL[i_full,ind_set1])]
+            yLsᵀ[i_full] = Sym("yL"*string(i_full)*"0"*string(ind_set1))
+            DP.subs = [DP.subs;Dict(Sym("yL"*string(i_full)*"0"*string(ind_set1))=>yL[i_full,ind_set1])]
         end
     end
     DP.YLᵀA[ind_set1,:] = yLsᵀ*sys.A    #transpose(yL[:,ind_set1])*sys.A    
@@ -471,24 +471,26 @@ for p=2:o
     end
 end
 
+Mathematica_output(DP, aexp, "./test/2DOF_cubic_conservative_unforced_CNF/", "Output_Mathematica",
+                   print_reduced_dynamics = true, print_nonlinear_mappings = true)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #          Substitutions           #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-substitutions = [[Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc], [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]]
-substitutions!(DP, substitutions)
-reduced_dynamics_substitutions!(DP, substitutions)
-nonlinear_mappings_substitutions!(DP, substitutions)
+# substitutions = [[Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc], [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]]
+# substitutions!(DP, substitutions)
+# reduced_dynamics_substitutions!(DP, substitutions)
+# nonlinear_mappings_substitutions!(DP, substitutions)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #             Printing             #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-reduced_dynamics_latex_output(DP, aexp, "./test/2DOF_oscillator_cubic_conservative_unforced_CNF_output.txt")
-nonlinear_mappings_latex_output(DP, aexp, "./test/2DOF_oscillator_cubic_conservative_unforced_CNF_output.txt")
+# reduced_dynamics_latex_output(DP, aexp, "./test/2DOF_oscillator_cubic_conservative_unforced_CNF_output.txt")
+# nonlinear_mappings_latex_output(DP, aexp, "./test/2DOF_oscillator_cubic_conservative_unforced_CNF_output.txt")
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #          Realification           #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-omega, xi = backbone_CNF(DP, aexp)
-amplitude = physical_amplitudes_CNF(DP, aexp)
-backbone_output(omega, "./test/2DOF_oscillator_cubic_conservative_unforced_CNF_output.txt")
-physical_amplitudes_output(amplitude, "./test/2DOF_oscillator_cubic_conservative_unforced_CNF_output.txt")
+# omega, xi = backbone_CNF(DP, aexp)
+# amplitude = physical_amplitudes_CNF(DP, aexp)
+# backbone_output(omega, "./test/2DOF_oscillator_cubic_conservative_unforced_CNF_output.txt")
+# physical_amplitudes_output(amplitude, "./test/2DOF_oscillator_cubic_conservative_unforced_CNF_output.txt")
