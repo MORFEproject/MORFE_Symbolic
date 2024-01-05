@@ -1,6 +1,29 @@
-fres = ConstantArray[0, naut];
-For[ivar = 1, ivar <= naut, ivar++,
-   For[iset = 1, iset <= nsets, iset++,
-       fres[[ivar]] += f[[ivar, iset]]*monoms[[iset]];
-   ];
+In[2366]:= fres=ConstantArray[0,naut];
+cont=1;
+For[ivar=1,ivar<=naut,ivar++,
+For[iset=1,iset<=nsets,iset++,
+f[[ivar,iset]]=Together[Expand[FullSimplify[f[[ivar,iset]]],{\[Xi]>0,\[Xi]<1}]];
+fres[[ivar]]+=f[[ivar,iset]] monoms[[iset]];
+If[!PossibleZeroQ[f[[ivar,iset]]],
+Print[TeXForm[monoms[[iset]]]];
+Print[f[[ivar,iset]]];
+Print[TeXForm[f[[ivar,iset]]]];
 ];
+];
+];
+Print[TeXForm[fres[[1]]]];
+Print[TeXForm[fres[[2]]]];
+During evaluation of In[2366]:= \text{z1}
+During evaluation of In[2366]:= (-\[Xi]1+Sqrt[-1+\[Xi]1^2]) \[Omega]1
+During evaluation of In[2366]:= \left(\sqrt{\text{$\xi $1}^2-1}-\text{$\xi $1}\right) \text{$\omega $1}
+During evaluation of In[2366]:= \text{z2} \text{z3}
+During evaluation of In[2366]:= -((G\.b2₁₁ \[Kappa] (-\[Xi]1+Sqrt[-1+\[Xi]1^2]))/(2 (1-\[Xi]1^2+\[Xi]1 Sqrt[-1+\[Xi]1^2]) \[Omega]1 (4 \[Omega]1^2-8 \[Xi]1^2 \[Omega]1^2+8 \[Xi]1 Sqrt[-1+\[Xi]1^2] \[Omega]1^2+4 \[Xi]1 \[Xi]2 \[Omega]1 \[Omega]2-4 Sqrt[-1+\[Xi]1^2] \[Xi]2 \[Omega]1 \[Omega]2-\[Omega]2^2)))
+During evaluation of In[2366]:= -\frac{\text{G$\unicode{00b2}\unicode{2081}\unicode{2081}$} \kappa  \left(\sqrt{\text{$\xi $1}^2-1}-\text{$\xi $1}\right)}{2 \left(-\text{$\xi $1}^2+\sqrt{\text{$\xi $1}^2-1} \text{$\xi $1}+1\right) \text{$\omega $1} \left(-4 \sqrt{\text{$\xi $1}^2-1} \text{$\xi $2} \text{$\omega $1} \text{$\omega $2}-8 \text{$\xi $1}^2 \text{$\omega $1}^2+8 \text{$\xi $1} \sqrt{\text{$\xi $1}^2-1} \text{$\omega $1}^2+4 \text{$\xi $1} \text{$\xi $2} \text{$\omega $1} \text{$\omega $2}+4 \text{$\omega $1}^2-\text{$\omega $2}^2\right)}
+During evaluation of In[2366]:= \text{z2}
+During evaluation of In[2366]:= -((\[Xi]1+Sqrt[-1+\[Xi]1^2]) \[Omega]1)
+During evaluation of In[2366]:= -\left(\left(\sqrt{\text{$\xi $1}^2-1}+\text{$\xi $1}\right) \text{$\omega $1}\right)
+During evaluation of In[2366]:= \text{z1} \text{z4}
+During evaluation of In[2366]:= (G\.b2₁₁ \[Kappa])/(2 Sqrt[-1+\[Xi]1^2] \[Omega]1 (-4 \[Omega]1^2+8 \[Xi]1^2 \[Omega]1^2+8 \[Xi]1 Sqrt[-1+\[Xi]1^2] \[Omega]1^2-4 \[Xi]1 \[Xi]2 \[Omega]1 \[Omega]2-4 Sqrt[-1+\[Xi]1^2] \[Xi]2 \[Omega]1 \[Omega]2+\[Omega]2^2))
+During evaluation of In[2366]:= \frac{\text{G$\unicode{00b2}\unicode{2081}\unicode{2081}$} \kappa }{2 \sqrt{\text{$\xi $1}^2-1} \text{$\omega $1} \left(-4 \sqrt{\text{$\xi $1}^2-1} \text{$\xi $2} \text{$\omega $1} \text{$\omega $2}+8 \text{$\xi $1}^2 \text{$\omega $1}^2+8 \text{$\xi $1} \sqrt{\text{$\xi $1}^2-1} \text{$\omega $1}^2-4 \text{$\xi $1} \text{$\xi $2} \text{$\omega $1} \text{$\omega $2}-4 \text{$\omega $1}^2+\text{$\omega $2}^2\right)}
+During evaluation of In[2366]:= \left(\sqrt{\text{$\xi $1}^2-1}-\text{$\xi $1}\right) \text{$\omega $1} \text{z1}-\frac{\text{G$\unicode{00b2}\unicode{2081}\unicode{2081}$} \kappa  \left(\sqrt{\text{$\xi $1}^2-1}-\text{$\xi $1}\right) \text{z2} \text{z3}}{2 \left(-\text{$\xi $1}^2+\sqrt{\text{$\xi $1}^2-1} \text{$\xi $1}+1\right) \text{$\omega $1} \left(-4 \sqrt{\text{$\xi $1}^2-1} \text{$\xi $2} \text{$\omega $1} \text{$\omega $2}-8 \text{$\xi $1}^2 \text{$\omega $1}^2+8 \text{$\xi $1} \sqrt{\text{$\xi $1}^2-1} \text{$\omega $1}^2+4 \text{$\xi $1} \text{$\xi $2} \text{$\omega $1} \text{$\omega $2}+4 \text{$\omega $1}^2-\text{$\omega $2}^2\right)}
+During evaluation of In[2366]:= \frac{\text{G$\unicode{00b2}\unicode{2081}\unicode{2081}$} \kappa  \text{z1} \text{z4}}{2 \sqrt{\text{$\xi $1}^2-1} \text{$\omega $1} \left(-4 \sqrt{\text{$\xi $1}^2-1} \text{$\xi $2} \text{$\omega $1} \text{$\omega $2}+8 \text{$\xi $1}^2 \text{$\omega $1}^2+8 \text{$\xi $1} \sqrt{\text{$\xi $1}^2-1} \text{$\omega $1}^2-4 \text{$\xi $1} \text{$\xi $2} \text{$\omega $1} \text{$\omega $2}-4 \text{$\omega $1}^2+\text{$\omega $2}^2\right)}-\left(\sqrt{\text{$\xi $1}^2-1}+\text{$\xi $1}\right) \text{$\omega $1} \text{z2}

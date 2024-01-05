@@ -205,10 +205,10 @@ function nonlinear_mappings_latex_output(DP::parametrisation_struct, aexp::multi
         expr = poly_from_expr(u[i], gens = z)
         expr_monoms = expr[1].monoms()
         expr_coeffs = expr[1].coeffs()
-        if i <= length(u)/2
+        if i <= DP.n_aut/2
             latex_output *= "\nu_{$(i)} &="
         else
-            latex_output *= "\nv_{$(i-Int(length(u)/2))} &="
+            latex_output *= "\nv_{$(i-Int(DP.n_aut/2))} &="
         end 
         latex_output = latex_code_for_polynomial_expression(expr_coeffs, expr_monoms, latex_output, normal_coordinate)
         latex_output *= "\\\\"
