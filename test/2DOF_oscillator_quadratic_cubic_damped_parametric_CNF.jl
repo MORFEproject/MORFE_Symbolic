@@ -69,6 +69,7 @@ M = diagm(sympy.ones(n_osc,1)[:,1])
 # or simply define a diagonal matrix with entries ωⱼ^2:
 n_osc = size(M)[1]
 ω = create_pos_vec("ω",n_osc)
+ω[1] = Sym(1)
 K = diagm(ω.^2)
 #
 # if nonconservative
@@ -83,12 +84,16 @@ K = diagm(ω.^2)
 # or simply create a diagonalised damping matrix
 # generic diagonal damping:
 ξ = create_pos_vec("ξ",n_osc)
+ξ[1] = symbols("ξ", positive = true)
+ξ[2] = ξ[1]
 ζ = 2*ξ.*ω
 C = diagm(ζ)
 # for the sake of readability, it is useful to specify that each oscillator is underdamped
 # which means that the quantity   δⱼ := √(1-ξⱼ^2) is positive
 # definition of δ = √(1-ξ.^2) will be used later for simplification
 δ = create_pos_vec("δ",n_osc)
+δ[1] = symbols("δ", positive = true)
+δ[2] = δ[1]
 
 # the total size of the DAE system will be 
 # the size of the oscillatory system in first order form (2*n_osc)
@@ -139,21 +144,11 @@ function RHS_Quad(Y)
     U = Y[1:n_osc]                        # first n_osc positions is U
     R = Y[2*n_osc+1:2*n_osc+n_aux]      # last n_aux positions are the auxiliary variables
     # define generic quadratic and cubic nonlinearities
-    # CHECK THIS PART!
-    G¹₁₁ = symbols("G¹₁₁", real = true)
-    G²₁₁ = symbols("G²₁₁", real = true);  G¹₁₂ = G²₁₁;
-    G¹₂₂ = symbols("G¹₂₂", real = true);  G²₁₂ = G¹₂₂;
-    G²₂₂ = symbols("G²₂₂", real = true)
-    H¹₁₁₁ = symbols("H¹₁₁₁", real = true)
-    H²₁₁₁ = symbols("H²₁₁₁", real = true); H¹₁₁₂ = H²₁₁₁;
-    H¹₁₂₂ = symbols("H¹₁₂₂", real = true); H²₁₁₂ = H¹₁₂₂;
-    H¹₂₂₂ = symbols("H¹₂₂₂", real = true); H²₁₂₂ = H¹₂₂₂;
-    H²₂₂₂ = symbols("H²₂₂₂", real = true)
+    g = symbols("g", real = true)
+    h = symbols("h", real = true)
     # assign to the second n_osc equations
-    F[n_osc+1] = - (G¹₁₁*U[1]^2 + 2*G¹₁₂*U[2]*U[1] + G¹₂₂*U[2]^2) -
-                   (H¹₁₁₁*U[1]*R[1] + 3*H¹₁₁₂*U[2]*R[1] + 3*H¹₁₂₂*U[1]*R[2] + H¹₂₂₂*R[2]*U[2])
-    F[n_osc+2] = - (G²₁₁*U[1]^2   + 2*G²₁₂*U[2]*U[1]   + G²₂₂*U[2]^2) -
-                   (H²₁₁₁*U[1]*R[1] + 3*H²₁₁₂*U[2]*R[1] + 3*H²₁₂₂*U[1]*R[2] + H²₂₂₂*R[2]*U[2])
+    F[n_osc+1] = - (2*g*U[2]*U[1] - h*U[1]*R[1])
+    F[n_osc+2] = - (g*U[1]^2)
     # last n_aux equations are the algebraic ones defining the auxiliary variables
     F[2*n_osc+1:2*n_osc+n_aux] = -U.^2
     return F
@@ -226,7 +221,7 @@ aexp = init_multiexponent_struct(n_rom,o)
 # this is a structure that will contain the solution of each step
 # of the parametrisation method
 # here it is only initialised with zeros
-DP = init_parametrisation_struct(n_full,n_rom,aexp.n_sets,n_aut,o)
+DP = init_parametrisation_struct(n_full,n_rom,aexp.n_sets,n_aut,n_osc,o)
 # DP.W is a (n_full×n_sets) matrix whose colums contain the mapping 
 # relating to each monomial 
 # Y = ∑  DP.W[:,I]*z^aexp[I,:]
@@ -357,12 +352,12 @@ sys.B+= ∇Q0
 # Λ[n_aux+3:n_aux+4] are relative to ω₂
 # and so on
 # here the master are chosen as those relating to ω₁:
-yR = YR[:,n_aux+2:-1:n_aux+1]
-yL = YL[:,n_aux+2:-1:n_aux+1]
+yR = YR[:,[6,5]]
+yL = YL[:,[6,5]]
 yR[:,1] = yR[:,1]/(yR[1,1])
 yR[:,2] = yR[:,2]/(yR[1,2])
 
-λ = Λ[n_aux+2:-1:n_aux+1]
+λ = Λ[[6,5]]
 # any choice is possible but the sorting is not known before launching the script!
 # one must then look at the eigenvalues sorting, then choose the masters
 # after having chosen the master, 
@@ -469,21 +464,21 @@ for p=2:o
     end
 end
 
-Mathematica_output(DP, aexp, "./test/2DOF_quadratic_cubic_damped_parametric_CNF/", "Output_Mathematica",
-                   print_reduced_dynamics = true, print_nonlinear_mappings = true)
+# Mathematica_output(DP, aexp, "./test/2DOF_quadratic_cubic_damped_parametric_CNF/", "Output_Mathematica",
+#                    print_reduced_dynamics = true, print_nonlinear_mappings = true)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #          Substitutions           #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-# substitutions = [[Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc], [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]]
-# substitutions!(DP, substitutions)
-# reduced_dynamics_substitutions!(DP, substitutions)
-# nonlinear_mappings_substitutions!(DP, substitutions)
+substitutions = [[Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc], [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]]
+substitutions!(DP, substitutions)
+reduced_dynamics_substitutions!(DP, substitutions)
+reduced_dynamics_latex_output(DP, aexp, "./test/2DOF_oscillator_quadratic_cubic_damped_parametric_CNF_output.txt")
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #             Printing             #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-# reduced_dynamics_latex_output(DP, aexp, "./test/2DOF_oscillator_quadratic_cubic_damped_parametric_CNF_output.txt")
-# nonlinear_mappings_latex_output(DP, aexp, "./test/2DOF_oscillator_quadratic_cubic_damped_parametric_CNF_output.txt")
+nonlinear_mappings_substitutions!(DP, substitutions)
+nonlinear_mappings_latex_output(DP, aexp, "./test/2DOF_oscillator_quadratic_cubic_damped_parametric_CNF_output.txt")
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #          Realification           #

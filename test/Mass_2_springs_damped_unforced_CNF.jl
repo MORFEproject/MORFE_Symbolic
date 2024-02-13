@@ -83,6 +83,7 @@ K = diagm(ω.^2)
 # or simply create a diagonalised damping matrix
 # generic diagonal damping:
 ξ = create_pos_vec("ξ",n_osc)
+ξ[2] = ξ[1]
 ζ = 2*ξ.*ω
 C = diagm(ζ)
 # for the sake of readability, it is useful to specify that each oscillator is underdamped
@@ -125,7 +126,7 @@ function RHS_Lin(Y)
     # first n_osc equations is M*Uₜ = M*V
     F[1:n_osc] = M*V
     # second n_osc equations is M*Vₜ = -C*V -K*U ...
-    F[n_osc+1:2*n_osc] = -C*V -K*U
+    F[n_osc+1:2*n_osc] = -K*U -C*V
     # last n_aux equations are the algebraic ones defining the auxiliary variables
     F[2*n_osc+1:2*n_osc+n_aux] = R
     return F
@@ -140,20 +141,20 @@ function RHS_Quad(Y)
     R = Y[2*n_osc+1:2*n_osc+n_aux]      # last n_aux positions are the auxiliary variables
     # define generic quadratic and cubic nonlinearities
     # CHECK THIS PART!
-    G¹₁₁ = 0 #Sym("G¹₁₁")
-    G²₁₁ = 0;  G¹₁₂ = G²₁₁; #Sym("G²₁₁")
-    G¹₂₂ = 0;  G²₁₂ = G¹₂₂; #Sym("G¹₂₂")
-    G²₂₂ = 0 #Sym("G²₂₂")
-    H¹₁₁₁ = symbols("H1111", real = true)
-    H²₁₁₁ = symbols("H2111", real = true); H¹₁₁₂ = H²₁₁₁;
-    H¹₁₂₂ = symbols("H1122", real = true); H²₁₁₂ = H¹₁₂₂;
-    H¹₂₂₂ = symbols("H1222", real = true); H²₁₂₂ = H¹₂₂₂;
-    H²₂₂₂ = symbols("H2222", real = true)
+    g¹₁₁ = Sym(3)/Sym(2)*ω[1]^2
+    g²₁₁ = ω[2]^2/Sym(2);  g¹₁₂ = 2*g²₁₁;
+    g¹₂₂ = ω[1]^2/Sym(2);  g²₁₂ = 2*g¹₂₂;
+    g²₂₂ = Sym(3)/Sym(2)*ω[2]^2
+    h¹₁₁₁ = (ω[1]^2+ω[2]^2)/Sym(2)
+    h²₁₁₁ = 0; h¹₁₁₂ = 3*h²₁₁₁;
+    h¹₁₂₂ = (ω[1]^2+ω[2]^2)/Sym(2); h²₁₁₂ = h¹₁₂₂;
+    h¹₂₂₂ = 0; h²₁₂₂ = 3*h¹₂₂₂;
+    h²₂₂₂ = (ω[1]^2+ω[2]^2)/Sym(2)
     # assign to the second n_osc equations
-    F[n_osc+1] = - (G¹₁₁*U[1]^2 + 2*G¹₁₂*U[2]*U[1] + G¹₂₂*U[2]^2) -
-                   (H¹₁₁₁*U[1]*R[1] + 3*H¹₁₁₂*U[2]*R[1] + 3*H¹₁₂₂*U[1]*R[2] + H¹₂₂₂*R[2]*U[2])
-    F[n_osc+2] = - (G²₁₁*U[1]^2   + 2*G²₁₂*U[2]*U[1]   + G²₂₂*U[2]^2) -
-                   (H²₁₁₁*U[1]*R[1] + 3*H²₁₁₂*U[2]*R[1] + 3*H²₁₂₂*U[1]*R[2] + H²₂₂₂*R[2]*U[2])
+    F[n_osc+1] = - (g¹₁₁*U[1]^2 + g¹₁₂*U[1]*U[2] + g¹₂₂*U[2]^2) -
+                   (h¹₁₁₁*U[1]*R[1] + h¹₁₁₂*U[2]*R[1] + h¹₁₂₂*U[1]*R[2] + h¹₂₂₂*R[2]*U[2])
+    F[n_osc+2] = - (g²₁₁*U[1]^2 + g²₁₂*U[2]*U[1] + g²₂₂*U[2]^2) -
+                   (h²₁₁₁*U[1]*R[1] + h²₁₁₂*U[2]*R[1] + h²₁₂₂*U[1]*R[2] + h²₂₂₂*R[2]*U[2])
     # last n_aux equations are the algebraic ones defining the auxiliary variables
     F[2*n_osc+1:2*n_osc+n_aux] = -U.^2
     return F
@@ -203,7 +204,7 @@ n_nonaut = 0
 n_rom = n_aut + n_nonaut
 #
 # order of the expansion
-o = 5
+o = 3
 #
 # initialise aexp
 # this is a structure containing information about all the sets
@@ -230,11 +231,6 @@ aexp = init_multiexponent_struct(n_rom,o)
 # of the parametrisation method
 # here it is only initialised with zeros
 DP = init_parametrisation_struct(n_full,n_rom,aexp.n_sets,n_aut,o)
-
-# Small damping hypotheses
-# DP.subs = [DP.subs;Dict(ξ[1]^2=>0);Dict(ξ[1]^3=>0);Dict(ξ[1]^5=>0);Dict(ξ[1]^7=>0);Dict(ξ[1]^9=>0);Dict(ξ[1]^11=>0);Dict(ξ[1]^13=>0)]
-# DP.subs = [DP.subs;Dict(ξ[2]^2=>0);Dict(ξ[2]^3=>0);Dict(ξ[2]^5=>0);Dict(ξ[2]^7=>0);Dict(ξ[2]^9=>0);Dict(ξ[2]^11=>0);Dict(ξ[2]^13=>0)]
-
 # DP.W is a (n_full×n_sets) matrix whose colums contain the mapping 
 # relating to each monomial 
 # Y = ∑  DP.W[:,I]*z^aexp[I,:]
@@ -412,8 +408,8 @@ for ind_set1 = 1:n_aut
     yLsᵀ = 0*transpose(yL[:,ind_set1])
     for i_full=1:n_full
         if yL[i_full,ind_set1] != 0
-            yLsᵀ[i_full] = Sym("yL"*string(i_full)*"0"*string(ind_set1))
-            DP.subs = [DP.subs;Dict(Sym("yL"*string(i_full)*"0"*string(ind_set1))=>yL[i_full,ind_set1])]
+            yLsᵀ[i_full] = Sym("yL"*string(i_full)*"|"*string(ind_set1))
+            DP.subs = [DP.subs;Dict(Sym("yL"*string(i_full)*"|"*string(ind_set1))=>yL[i_full,ind_set1])]
         end
     end
     DP.YLᵀA[ind_set1,:] = yLsᵀ*sys.A    #transpose(yL[:,ind_set1])*sys.A    
@@ -476,24 +472,24 @@ for p=2:o
     end
 end
 
-Mathematica_output(DP, aexp, "./test/2DOF_cubic_damped_unforced_CNF/", "Output_Mathematica",
-                   print_reduced_dynamics = true, print_nonlinear_mappings = false)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #          Substitutions           #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-# substitutions = [[Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc], [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]]
-# substitutions!(DP, substitutions)
-# reduced_dynamics_substitutions!(DP, substitutions)
-# nonlinear_mappings_substitutions!(DP, substitutions)
+substitutions = [[Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc], [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]]
+substitutions!(DP, substitutions)
+reduced_dynamics_substitutions!(DP, substitutions)
+nonlinear_mappings_substitutions!(DP, substitutions)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #             Printing             #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-# reduced_dynamics_latex_output(DP, aexp, "./test/2DOF_oscillator_cubic_damped_unforced_CNF_output.txt")
-# nonlinear_mappings_latex_output(DP, aexp, "./test/2DOF_oscillator_cubic_damped_unforced_CNF_output.txt")
+reduced_dynamics_latex_output(DP, aexp, "./test/Mass_2_springs_damped_unforced_CNF_output.txt")
+nonlinear_mappings_latex_output(DP, aexp, "./test/Mass_2_springs_damped_unforced_CNF_output.txt")
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #          Realification           #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-# omega, xi = backbone_CNF(DP, aexp)
-# backbone_output(omega, "./test/2DOF_oscillator_cubic_damped_unforced_CNF_output.txt")
+omega, xi = backbone_CNF(DP, aexp)
+amplitude = physical_amplitudes_CNF(DP, aexp)
+backbone_output(omega, "./test/Mass_2_springs_damped_unforced_CNF_output.txt")
+physical_amplitudes_output(amplitude, "./test/Mass_2_springs_damped_unforced_CNF_output.txt")

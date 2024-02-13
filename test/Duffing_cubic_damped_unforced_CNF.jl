@@ -72,7 +72,7 @@ K = diagm(ω.^2)
 #
 # or simply create a diagonalised damping matrix
 # generic diagonal damping:
-ξ = create_pos_vec("ξ",n_osc)
+ξ = create_real_vec("ξ",n_osc)
 ζ = 2*ξ.*ω
 C = diagm(ζ)
 # for the sake of readability, it is useful to specify that each oscillator is underdamped
@@ -181,7 +181,7 @@ n_nonaut = 0
 n_rom = n_aut + n_nonaut
 #
 # order of the expansion
-o = 9
+o = 3
 #
 # initialise aexp
 # this is a structure containing information about all the sets
@@ -231,7 +231,7 @@ conditions = [λ₀[2] =>-λ₀[1]]
 
 σ₀ = transpose(aexp.mat)*λ₀
 
-style = "CNF"
+style = "RNF"
 
 if style == "Graph"
     DP.res = DP.res.+1
@@ -354,6 +354,18 @@ yR[:,2]=yR[:,2]/(yR[1,2])
 #λ = Λ[n_aux+1:n_aux+2]
 λ = Λ[n_aux+2:-1:n_aux+1] #to test !!
 
+# Small damping
+# yR[1,1] = yR[1,1].subs(ξ[1]^2,0)
+# yR[1,2] = yR[1,2].subs(ξ[1]^2,0)
+# yR[2,1] = yR[2,1].subs(ξ[1]^2,0)
+# yR[2,2] = yR[2,2].subs(ξ[1]^2,0)
+# yL[1,1] = yL[1,1].subs(ξ[1]^2,0)
+# yL[1,2] = yL[1,2].subs(ξ[1]^2,0)
+# yL[2,1] = yL[2,1].subs(ξ[1]^2,0)
+# yL[2,2] = yL[2,2].subs(ξ[1]^2,0)
+# λ[1] = λ[1].subs(ξ[1]^2,0)
+# λ[2] = λ[2].subs(ξ[1]^2,0)
+
 # any choice is possible but the sorting is not known before launching the script!
 # one must then look at the eigenvalues sorting, then choose the masters
 # after having chosen the master, 
@@ -462,15 +474,15 @@ end
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #          Substitutions           #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-substitutions = [[Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc], [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]]
-substitutions!(DP, substitutions)
-reduced_dynamics_substitutions!(DP, substitutions)
+# substitutions = [[Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc], [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]]
+substitutions!(DP, [])
+reduced_dynamics_substitutions!(DP, [])
 # nonlinear_mappings_substitutions!(DP, substitutions)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #             Printing             #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-# reduced_dynamics_latex_output(DP, aexp, "./test/Duffing_cubic_damped_unforced_CNF_output.txt")
+reduced_dynamics_latex_output(DP, aexp, "./test/Duffing_cubic_damped_unforced_RNF_output.txt")
 # nonlinear_mappings_latex_output(DP, aexp, "./test/Duffing_cubic_damped_unforced_CNF_output.txt")
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -482,8 +494,8 @@ reduced_dynamics_substitutions!(DP, substitutions)
 # omega, xi = backbone_CNF(DP, aexp)
 # amplitude = physical_amplitudes_CNF(DP, aexp)
 
-Mathematica_output(DP, aexp, "./test/Duffing_cubic_damped_unforced_CNF", "Output_Mathematica",
-                    print_reduced_dynamics = true, print_nonlinear_mappings = true)#,
-                    # print_backbone = true, omega_rho = omega,
-                    # print_damping = true, xi_rho = xi, 
-                    # print_physical_amplitudes = true, ampli_rho = amplitude)
+# Mathematica_output(DP, aexp, "./test/Duffing_cubic_damped_unforced_CNF", "Output_Mathematica",
+#                     print_reduced_dynamics = true, print_nonlinear_mappings = true)#,
+#                     # print_backbone = true, omega_rho = omega,
+#                     # print_damping = true, xi_rho = xi, 
+#                     # print_physical_amplitudes = true, ampli_rho = amplitude)

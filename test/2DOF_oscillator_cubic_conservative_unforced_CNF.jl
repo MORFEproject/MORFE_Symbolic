@@ -140,20 +140,20 @@ function RHS_Quad(Y)
     R = Y[2*n_osc+1:2*n_osc+n_aux]      # last n_aux positions are the auxiliary variables
     # define generic quadratic and cubic nonlinearities
     # CHECK THIS PART!
-    G¹₁₁ = 0 #Sym("G¹₁₁")
-    G²₁₁ = 0;  G¹₁₂ = G²₁₁; #Sym("G²₁₁")
-    G¹₂₂ = 0;  G²₁₂ = G¹₂₂; #Sym("G¹₂₂")
-    G²₂₂ = 0 #Sym("G²₂₂")
-    H¹₁₁₁ = symbols("H1111", real = true)
-    H²₁₁₁ = symbols("H2111", real = true); H¹₁₁₂ = H²₁₁₁;
-    H¹₁₂₂ = symbols("H1122", real = true); H²₁₁₂ = H¹₁₂₂;
-    H¹₂₂₂ = symbols("H1222", real = true); H²₁₂₂ = H¹₂₂₂;
-    H²₂₂₂ = symbols("H2222", real = true)
+    g¹₁₁ = 0 #Sym("G¹₁₁")
+    g²₁₁ = 0;  g¹₁₂ = 2*g²₁₁; #Sym("G²₁₁")
+    g¹₂₂ = 0;  g²₁₂ = 2*g¹₂₂; #Sym("G¹₂₂")
+    g²₂₂ = 0 #Sym("G²₂₂")
+    h¹₁₁₁ = symbols("h¹₁₁₁", real = true)
+    h²₁₁₁ = symbols("h²₁₁₁", real = true); h¹₁₁₂ = 3*h²₁₁₁; #h¹₁₁₂ = symbols("h¹₁₁₂", real = true);
+    h¹₁₂₂ = symbols("h¹₁₂₂", real = true); h²₁₁₂ = h¹₁₂₂; #h²₁₁₂ = symbols("h²₁₁₂", real = true)
+    h¹₂₂₂ = symbols("h¹₂₂₂", real = true); h²₁₂₂ = 3*h¹₂₂₂; #h²₁₂₂ = symbols("h²₁₂₂", real = true)
+    h²₂₂₂ = symbols("h²₂₂₂", real = true)
     # assign to the second n_osc equations
-    F[n_osc+1] = - (G¹₁₁*U[1]^2 + 2*G¹₁₂*U[2]*U[1] + G¹₂₂*U[2]^2) -
-                   (H¹₁₁₁*U[1]*R[1] + 3*H¹₁₁₂*U[2]*R[1] + 3*H¹₁₂₂*U[1]*R[2] + H¹₂₂₂*R[2]*U[2])
-    F[n_osc+2] = - (G²₁₁*U[1]^2   + 2*G²₁₂*U[2]*U[1]   + G²₂₂*U[2]^2) -
-                   (H²₁₁₁*U[1]*R[1] + 3*H²₁₁₂*U[2]*R[1] + 3*H²₁₂₂*U[1]*R[2] + H²₂₂₂*R[2]*U[2])
+    F[n_osc+1] = - (g¹₁₁*U[1]^2 + g¹₁₂*U[1]*U[2] + g¹₂₂*U[2]^2) -
+                   (h¹₁₁₁*U[1]*R[1] + h¹₁₁₂*U[2]*R[1] + h¹₁₂₂*U[1]*R[2] + h¹₂₂₂*R[2]*U[2])
+    F[n_osc+2] = - (g²₁₁*U[1]^2 + g²₁₂*U[2]*U[1] + g²₂₂*U[2]^2) -
+                   (h²₁₁₁*U[1]*R[1] + h²₁₁₂*U[2]*R[1] + h²₁₂₂*U[1]*R[2] + h²₂₂₂*R[2]*U[2])
     # last n_aux equations are the algebraic ones defining the auxiliary variables
     F[2*n_osc+1:2*n_osc+n_aux] = -U.^2
     return F
@@ -471,21 +471,21 @@ for p=2:o
     end
 end
 
-Mathematica_output(DP, aexp, "./test/2DOF_cubic_conservative_unforced_CNF/", "Output_Mathematica",
-                   print_reduced_dynamics = true, print_nonlinear_mappings = true)
+# Mathematica_output(DP, aexp, "./test/2DOF_cubic_conservative_unforced_CNF/", "Output_Mathematica",
+#                    print_reduced_dynamics = true, print_nonlinear_mappings = true)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #          Substitutions           #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-# substitutions = [[Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc], [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]]
-# substitutions!(DP, substitutions)
-# reduced_dynamics_substitutions!(DP, substitutions)
-# nonlinear_mappings_substitutions!(DP, substitutions)
+substitutions = [[Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc], [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]]
+substitutions!(DP, substitutions)
+reduced_dynamics_substitutions!(DP, substitutions)
+nonlinear_mappings_substitutions!(DP, substitutions)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #             Printing             #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-# reduced_dynamics_latex_output(DP, aexp, "./test/2DOF_oscillator_cubic_conservative_unforced_CNF_output.txt")
-# nonlinear_mappings_latex_output(DP, aexp, "./test/2DOF_oscillator_cubic_conservative_unforced_CNF_output.txt")
+reduced_dynamics_latex_output(DP, aexp, "./test/2DOF_oscillator_cubic_conservative_unforced_CNF_output.txt")
+nonlinear_mappings_latex_output(DP, aexp, "./test/2DOF_oscillator_cubic_conservative_unforced_CNF_output.txt")
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #          Realification           #

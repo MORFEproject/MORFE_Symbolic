@@ -140,20 +140,20 @@ function RHS_Quad(Y)
     R = Y[2*n_osc+1:2*n_osc+n_aux]      # last n_aux positions are the auxiliary variables
     # define generic quadratic and cubic nonlinearities
     # CHECK THIS PART!
-    G¹₁₁ = symbols("G¹₁₁", real = true)
-    G²₁₁ = symbols("G²₁₁", real = true);  G¹₁₂ = G²₁₁;
-    G¹₂₂ = symbols("G¹₂₂", real = true);  G²₁₂ = G¹₂₂;
-    G²₂₂ = symbols("G²₂₂", real = true)
-    H¹₁₁₁ = symbols("H¹₁₁₁", real = true)
-    H²₁₁₁ = symbols("H²₁₁₁", real = true); H¹₁₁₂ = H²₁₁₁;
-    H¹₁₂₂ = symbols("H¹₁₂₂", real = true); H²₁₁₂ = H¹₁₂₂;
-    H¹₂₂₂ = symbols("H¹₂₂₂", real = true); H²₁₂₂ = H¹₂₂₂;
-    H²₂₂₂ = symbols("H²₂₂₂", real = true)
+    g¹₁₁ = Sym("g¹₁₁")
+    g²₁₁ = Sym("g²₁₁");  g¹₁₂ = 2*g²₁₁;
+    g¹₂₂ = Sym("g¹₂₂");  g²₁₂ = 2*g¹₂₂;
+    g²₂₂ = Sym("g²₂₂")
+    h¹₁₁₁ = symbols("h¹₁₁₁", real = true)
+    h²₁₁₁ = symbols("h²₁₁₁", real = true); h¹₁₁₂ = 3*h²₁₁₁;
+    h¹₁₂₂ = symbols("h¹₁₂₂", real = true); h²₁₁₂ = h¹₁₂₂;
+    h¹₂₂₂ = symbols("h¹₂₂₂", real = true); h²₁₂₂ = 3*h¹₂₂₂;
+    h²₂₂₂ = symbols("h²₂₂₂", real = true)
     # assign to the second n_osc equations
-    F[n_osc+1] = - (G¹₁₁*U[1]^2 + 2*G¹₁₂*U[2]*U[1] + G¹₂₂*U[2]^2) -
-                   (H¹₁₁₁*U[1]*R[1] + 3*H¹₁₁₂*U[2]*R[1] + 3*H¹₁₂₂*U[1]*R[2] + H¹₂₂₂*R[2]*U[2])
-    F[n_osc+2] = - (G²₁₁*U[1]^2   + 2*G²₁₂*U[2]*U[1]   + G²₂₂*U[2]^2) -
-                   (H²₁₁₁*U[1]*R[1] + 3*H²₁₁₂*U[2]*R[1] + 3*H²₁₂₂*U[1]*R[2] + H²₂₂₂*R[2]*U[2])
+    F[n_osc+1] = - (g¹₁₁*U[1]^2 + g¹₁₂*U[1]*U[2] + g¹₂₂*U[2]^2) -
+                   (h¹₁₁₁*U[1]*R[1] + h¹₁₁₂*U[2]*R[1] + h¹₁₂₂*U[1]*R[2] + h¹₂₂₂*R[2]*U[2])
+    F[n_osc+2] = - (g²₁₁*U[1]^2 + g²₁₂*U[2]*U[1] + g²₂₂*U[2]^2) -
+                   (h²₁₁₁*U[1]*R[1] + h²₁₁₂*U[2]*R[1] + h²₁₂₂*U[1]*R[2] + h²₂₂₂*R[2]*U[2])
     # last n_aux equations are the algebraic ones defining the auxiliary variables
     F[2*n_osc+1:2*n_osc+n_aux] = -U.^2
     return F

@@ -3,14 +3,13 @@ module MORFE_Symbolic
     using SymPy
     using Combinatorics
     using LinearAlgebra
-    using MathLink
 
     include("right_hand_side.jl")
     include("basic_functionalities.jl")
     include("realification.jl")
     include("matcont.jl")
     
-    export create_gen_vec,create_pos_vec
+    export create_gen_vec,create_real_vec,create_pos_vec
     export mysimp,mysub
     export multiexponent_struct,init_multiexponent_struct
     export system_struct,extract_Lin,extract_Quad,Q_fun
