@@ -364,11 +364,7 @@ function physical_amplitudes_output(ampli_rho, output_file = nothing; file_mode:
 end
 
 function Mathematica_output(DP::parametrisation_struct, aexp::multiexponent_struct, directory, file_basename;
-    print_reduced_dynamics = false, print_nonlinear_mappings = false, 
-    print_cartesian_realified_reduced_dynamics = false, print_cartesian_realified_nonlinear_mappings = false,
-    print_polar_realified_reduced_dynamics = false, real = nothing, imaginary = nothing,
-    print_backbone = false, omega_rho = nothing, print_damping = false, xi_rho = nothing,
-    print_physical_amplitudes = false, ampli_rho = nothing)
+    print_reduced_dynamics = true, print_nonlinear_mappings = true)
     mathematica_code = sympy.printing.mathematica.mathematica_code
 
     println("Mathematica output started")
@@ -470,60 +466,5 @@ function Mathematica_output(DP::parametrisation_struct, aexp::multiexponent_stru
             write(file, "];\n")
         end
     end
-
-    if print_cartesian_realified_reduced_dynamics
-        path = joinpath(directory, file_basename * "_cartesian_realified_reduced_dynamics.nb")
-        open(path, "w") do file
-            write(file, "frres = ConstantArray[0, naut];\n")
-            write(file, "For[ivar = 1, ivar <= naut, ivar++,\n")
-            write(file, "   For[iset = 1, iset <= nsets, iset++,\n")
-            write(file, "       frres[[ivar]] += fr[[ivar, iset]]*monoms[[iset]];\n")
-            write(file, "   ];\n")
-            write(file, "];\n")
-        end
-    end
-
-    if print_cartesian_realified_nonlinear_mappings
-        path = joinpath(directory, file_basename * "_cartesian_realified_nonlinear_mappings.nb")
-        open(path, "w") do file
-            write(file, "Wrres = ConstantArray[0, nfull];\n")
-            write(file, "For[ivar = 1, ivar <= nfull, ivar++,\n")
-            write(file, "   For[iset = 1, iset <= nsets, iset++,\n")
-            write(file, "       Wrres[[ivar]] += Wr[[ivar, iset]]*monoms[[iset]];\n")
-            write(file, "   ];\n")
-            write(file, "];\n")
-        end
-    end
-
-    if print_backbone
-        path = joinpath(directory, file_basename * "_backbone.nb")
-        open(path, "w") do file
-            write(file, "backbone = 0;\n")
-            write(file, "For[i = 1, i <= order, i++,\n")
-            write(file, "   backbone += omegaRho[[i]];\n")
-            write(file, "];\n")
-        end
-    end
-
-    if print_damping
-        path = joinpath(directory, file_basename * "_damping.nb")
-        open(path, "w") do file
-            write(file, "damping = 0;\n")
-            write(file, "For[i = 1, i <= order, i++,\n")
-            write(file, "   damping += xiRho[[i]];\n")
-            write(file, "];\n")
-        end
-    end
-
-    if print_physical_amplitudes
-        path = joinpath(directory, file_basename * "_physical_amplitudes.nb")
-        open(path, "w") do file
-            write(file, "physicalAmplitudes = 0;\n")
-            write(file, "For[i = 1, i <= order, i++,\n")
-            write(file, "   physicalAmplitudes += ampliRho[[i]];\n")
-            write(file, "];\n")
-        end
-    end
-    
     println("Mathematica output finished")
 end
