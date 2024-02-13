@@ -4,7 +4,7 @@ push!(LOAD_PATH,joinpath(pwd(),"src"))
 using MORFE_Symbolic
 using Combinatorics
 
-include("./../src/output.jl")
+# include("./../src/output.jl")
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #                            Definition of original system                                       #
@@ -207,7 +207,7 @@ aexp = init_multiexponent_struct(n_rom,o)
 # this is a structure that will contain the solution of each step
 # of the parametrisation method
 # here it is only initialised with zeros
-DP = init_parametrisation_struct(n_full,n_rom,aexp.n_sets,n_aut,o)
+DP = init_parametrisation_struct(n_full,n_rom,aexp.n_sets,n_aut,n_osc,o)
 # DP.W is a (n_full×n_sets) matrix whose colums contain the mapping 
 # relating to each monomial 
 # Y = ∑  DP.W[:,I]*z^aexp[I,:]
@@ -231,7 +231,7 @@ conditions = [λ₀[2] =>-λ₀[1]]
 
 σ₀ = transpose(aexp.mat)*λ₀
 
-style = "RNF"
+style = "CNF"
 
 if style == "Graph"
     DP.res = DP.res.+1
@@ -354,18 +354,6 @@ yR[:,2]=yR[:,2]/(yR[1,2])
 #λ = Λ[n_aux+1:n_aux+2]
 λ = Λ[n_aux+2:-1:n_aux+1] #to test !!
 
-# Small damping
-# yR[1,1] = yR[1,1].subs(ξ[1]^2,0)
-# yR[1,2] = yR[1,2].subs(ξ[1]^2,0)
-# yR[2,1] = yR[2,1].subs(ξ[1]^2,0)
-# yR[2,2] = yR[2,2].subs(ξ[1]^2,0)
-# yL[1,1] = yL[1,1].subs(ξ[1]^2,0)
-# yL[1,2] = yL[1,2].subs(ξ[1]^2,0)
-# yL[2,1] = yL[2,1].subs(ξ[1]^2,0)
-# yL[2,2] = yL[2,2].subs(ξ[1]^2,0)
-# λ[1] = λ[1].subs(ξ[1]^2,0)
-# λ[2] = λ[2].subs(ξ[1]^2,0)
-
 # any choice is possible but the sorting is not known before launching the script!
 # one must then look at the eigenvalues sorting, then choose the masters
 # after having chosen the master, 
@@ -474,15 +462,15 @@ end
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #          Substitutions           #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-# substitutions = [[Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc], [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]]
-substitutions!(DP, [])
-reduced_dynamics_substitutions!(DP, [])
+substitutions = [[Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc], [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]]
+substitutions!(DP, substitutions)
+reduced_dynamics_substitutions!(DP, substitutions)
 # nonlinear_mappings_substitutions!(DP, substitutions)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #             Printing             #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-reduced_dynamics_latex_output(DP, aexp, "./test/Duffing_cubic_damped_unforced_RNF_output.txt")
+reduced_dynamics_latex_output(DP, aexp, "./test/Duffing_cubic_damped_unforced_CNF_output.txt")
 # nonlinear_mappings_latex_output(DP, aexp, "./test/Duffing_cubic_damped_unforced_CNF_output.txt")
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#

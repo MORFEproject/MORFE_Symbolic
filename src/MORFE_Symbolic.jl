@@ -4,9 +4,13 @@ module MORFE_Symbolic
     using Combinatorics
     using LinearAlgebra
 
-    include("right_hand_side.jl")
     include("basic_functionalities.jl")
+    include("system_of_equations.jl")
+    include("parametrisation.jl")
+    include("multiexponent.jl")
+    include("output.jl")
     include("realification.jl")
+    include("right_hand_side.jl")
     
     export create_gen_vec,create_real_vec,create_pos_vec
     export mysimp,mysub
@@ -18,6 +22,8 @@ module MORFE_Symbolic
     export substitutions!, reduced_dynamics_substitutions!, nonlinear_mappings_substitutions!, Mathematica_output
     export polar_realification, cartesian_realification!, backbone_CNF, physical_amplitudes_CNF
     export modal_coordinates_from_physical_coordinates!
+    export reduced_dynamics_latex_output, nonlinear_mappings_latex_output, backbone_output, polar_realifed_reduced_dynamics_output
+    export physical_amplitudes_output, Mathematica_output
 
     #~~~~~~~~~~~~~~~~~#
     #           compute                #
@@ -120,171 +126,6 @@ module MORFE_Symbolic
         println("")
     end
 
-    function Mathematica_output(DP::parametrisation_struct, aexp::multiexponent_struct, directory, file_basename;
-        print_reduced_dynamics = false, print_nonlinear_mappings = false, 
-        print_cartesian_realified_reduced_dynamics = false, print_cartesian_realified_nonlinear_mappings = false,
-        print_polar_realified_reduced_dynamics = false, real = nothing, imaginary = nothing,
-        print_backbone = false, omega_rho = nothing, print_damping = false, xi_rho = nothing,
-        print_physical_amplitudes = false, ampli_rho = nothing)
-        mathematica_code = sympy.printing.mathematica.mathematica_code
-
-        println("Mathematica output started")
-
-        isdir(directory) || mkdir(directory)
-        path = joinpath(directory, file_basename * "_variables.nb")
-        open(path, "w") do file
-            write(file, "naut = $(DP.n_aut);\n")
-            write(file, "nfull = $(DP.n_full);\n")
-            write(file, "nsets = $(DP.n_sets);\n")
-            write(file, "order = $(DP.order);\n")
-            for i in eachindex(DP.subs)
-                for key in keys(DP.subs[i])
-                    if key != 0
-                        math_code = mathematica_code(key) * " = FullSimplify[" * mathematica_code(DP.subs[i][key]) * "];\n"
-                        write(file, math_code) 
-                    end
-                end
-            end
-            write(file, "monoms = ConstantArray[0,$(DP.n_sets)];\n")
-            for i_set = 1:DP.n_sets
-                z = [Sym("z$(i)") for i=1:DP.n_rom]
-                monom = prod(z .^ aexp.mat[:,i_set])
-                monom = mathematica_code(monom)
-                write(file, "monoms[[$(i_set)]] = " * monom * ";\n")
-            end
-            if print_reduced_dynamics
-                write(file, "f = ConstantArray[0,{$(DP.n_rom),$(DP.n_sets)}];\n")
-                for i_var = 1:DP.n_rom
-                    for i_set = 1:DP.n_sets
-                        write(file, "f[[$(i_var),$(i_set)]] = FullSimplify[" * mathematica_code(DP.f[i_var,i_set]) * "];\n")
-                    end
-                end
-            end
-            if print_nonlinear_mappings
-                write(file, "W = ConstantArray[0,{$(DP.n_full),$(DP.n_sets)}];\n")
-                for i_var = 1:DP.n_full
-                    for i_set = 1:DP.n_sets
-                        write(file, "W[[$(i_var),$(i_set)]] = FullSimplify[" * mathematica_code(DP.W[i_var,i_set]) * "];\n")
-                    end
-                end
-            end
-            if print_cartesian_realified_reduced_dynamics
-                write(file, "fr = ConstantArray[0,{$(DP.n_rom),$(DP.n_sets)}];\n")
-                for i_var = 1:DP.n_rom
-                    for i_set = 1:DP.n_sets
-                        write(file, "fr[[$(i_var),$(i_set)]] = FullSimplify[" * mathematica_code(DP.fr[i_var,i_set]) * "];\n")
-                    end
-                end
-            end
-            if print_cartesian_realified_nonlinear_mappings
-                write(file, "Wr = ConstantArray[0,{$(DP.n_full),$(DP.n_sets)}];\n")
-                for i_var = 1:DP.n_full
-                    for i_set = 1:DP.n_sets
-                        write(file, "Wr[[$(i_var),$(i_set)]] = FullSimplify[" * mathematica_code(DP.Wr[i_var,i_set]) * "];\n")
-                    end
-                end
-            end
-            if print_backbone
-                write(file, "omegaRho = ConstantArray[0,$(DP.order)];\n")
-                for i = 1:DP.order
-                    write(file, "omegaRho[[$(i)]] = FullSimplify[" * mathematica_code(omega_rho[i]) * "];\n")
-                end
-            end
-            if print_damping
-                write(file, "xiRho = ConstantArray[0,$(DP.order)];\n")
-                for i = 1:DP.order
-                    write(file, "xiRho[[$(i)]] = FullSimplify[" * mathematica_code(xi_rho[i]) * "];\n")
-                end
-            end
-            if print_physical_amplitudes
-                write(file, "ampliRho = ConstantArray[0,$(DP.order)];\n")
-                for i = 1:DP.order
-                    write(file, "ampliRho[[$(i)]] = FullSimplify[" * mathematica_code(ampli_rho[i]) * "];\n")
-                end
-            end
-        end
-
-        if print_reduced_dynamics
-            path = joinpath(directory, file_basename * "_reduced_dynamics.nb")
-            open(path, "w") do file
-                write(file, "fres = ConstantArray[0, naut];\n")
-                write(file, "For[ivar = 1, ivar <= naut, ivar++,\n")
-                write(file, "   For[iset = 1, iset <= nsets, iset++,\n")
-                write(file, "       fres[[ivar]] += f[[ivar, iset]]*monoms[[iset]];\n")
-                write(file, "   ];\n")
-                write(file, "];\n")
-            end
-        end
-
-        if print_nonlinear_mappings
-            path = joinpath(directory, file_basename * "_nonlinear_mappings.nb")
-            open(path, "w") do file
-                write(file, "Wres = ConstantArray[0, nfull];\n")
-                write(file, "For[ivar = 1, ivar <= nfull, ivar++,\n")
-                write(file, "   For[iset = 1, iset <= nsets, iset++,\n")
-                write(file, "       Wres[[ivar]] += W[[ivar, iset]]*monoms[[iset]];\n")
-                write(file, "   ];\n")
-                write(file, "];\n")
-            end
-        end
-
-        if print_cartesian_realified_reduced_dynamics
-            path = joinpath(directory, file_basename * "_cartesian_realified_reduced_dynamics.nb")
-            open(path, "w") do file
-                write(file, "frres = ConstantArray[0, naut];\n")
-                write(file, "For[ivar = 1, ivar <= naut, ivar++,\n")
-                write(file, "   For[iset = 1, iset <= nsets, iset++,\n")
-                write(file, "       frres[[ivar]] += fr[[ivar, iset]]*monoms[[iset]];\n")
-                write(file, "   ];\n")
-                write(file, "];\n")
-            end
-        end
-
-        if print_cartesian_realified_nonlinear_mappings
-            path = joinpath(directory, file_basename * "_cartesian_realified_nonlinear_mappings.nb")
-            open(path, "w") do file
-                write(file, "Wrres = ConstantArray[0, nfull];\n")
-                write(file, "For[ivar = 1, ivar <= nfull, ivar++,\n")
-                write(file, "   For[iset = 1, iset <= nsets, iset++,\n")
-                write(file, "       Wrres[[ivar]] += Wr[[ivar, iset]]*monoms[[iset]];\n")
-                write(file, "   ];\n")
-                write(file, "];\n")
-            end
-        end
-
-        if print_backbone
-            path = joinpath(directory, file_basename * "_backbone.nb")
-            open(path, "w") do file
-                write(file, "backbone = 0;\n")
-                write(file, "For[i = 1, i <= order, i++,\n")
-                write(file, "   backbone += omegaRho[[i]];\n")
-                write(file, "];\n")
-            end
-        end
-
-        if print_damping
-            path = joinpath(directory, file_basename * "_damping.nb")
-            open(path, "w") do file
-                write(file, "damping = 0;\n")
-                write(file, "For[i = 1, i <= order, i++,\n")
-                write(file, "   damping += xiRho[[i]];\n")
-                write(file, "];\n")
-            end
-        end
-
-        if print_physical_amplitudes
-            path = joinpath(directory, file_basename * "_physical_amplitudes.nb")
-            open(path, "w") do file
-                write(file, "physicalAmplitudes = 0;\n")
-                write(file, "For[i = 1, i <= order, i++,\n")
-                write(file, "   physicalAmplitudes += ampliRho[[i]];\n")
-                write(file, "];\n")
-            end
-        end
-        
-        println("Mathematica output finished")
-    end
-
     function reduced_dynamics_substitutions!(DP::parametrisation_struct,substitutions)
         println("Substituting reduced dynamics:")
         t1 = time_ns()
@@ -302,7 +143,7 @@ module MORFE_Symbolic
         println("Elapsed time: $((t2-t1)/1.0e9) s")
         println("")
     end
-
+    
     function nonlinear_mappings_substitutions!(DP::parametrisation_struct,substitutions)
         println("Substituting nonlinear mappings:")
         t1 = time_ns()
@@ -320,7 +161,6 @@ module MORFE_Symbolic
         println("Elapsed time: $((t2-t1)/1.0e9) s")
         println("")
     end
-
 end
 
 
