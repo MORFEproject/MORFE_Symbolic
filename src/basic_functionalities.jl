@@ -1,3 +1,6 @@
+"""
+Creates a generic symbolic vector where each entry is given by str indexed by an integer, up to size n.
+"""
 function create_gen_vec(str,n)
     z = sympy.zeros(n,1)[:,1]
     for i = 1:n
@@ -6,6 +9,9 @@ function create_gen_vec(str,n)
     return z
 end
 
+"""
+Creates a real symbolic vector where each entry is given by str indexed by an integer, up to size n.
+"""
 function create_real_vec(str,n)
     z = sympy.zeros(n,1)[:,1]
     for i = 1:n
@@ -14,6 +20,9 @@ function create_real_vec(str,n)
     return z
 end
 
+"""
+Creates a positive symbolic vector where each entry is given by str indexed by an integer, up to size n.
+"""
 function create_pos_vec(str,n)
     z = sympy.zeros(n,1)[:,1]
     for i = 1:n
@@ -22,6 +31,9 @@ function create_pos_vec(str,n)
     return z
 end
 
+"""
+Simplifies the input
+"""
 function mysimp(input)
     exp = reshape(input,prod(size(input)))
     for i = 1:length(exp)
@@ -30,6 +42,10 @@ function mysimp(input)
     return reshape(exp,size(input))
 end
 
+"""
+Performs substitutions on the input. subs should be a vector of dictionaries, each one having
+the item to substitute as key and the substitution as value. 
+"""
 function mysub(input,sub)
     exp = reshape(input,prod(size(input)))
     for i = 1:length(exp)

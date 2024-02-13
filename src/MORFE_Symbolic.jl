@@ -24,11 +24,18 @@ module MORFE_Symbolic
     export modal_coordinates_from_physical_coordinates!
     export reduced_dynamics_latex_output, nonlinear_mappings_latex_output, backbone_output, polar_realifed_reduced_dynamics_output
     export physical_amplitudes_output, Mathematica_output
+    export partitions_two
 
-    #~~~~~~~~~~~~~~~~~#
-    #           compute                #
-    #~~~~~~~~~~~~~~~~~#
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    #             compute              #
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
+    """
+    Function to calculate static solution. Finds Y0 such that B.Y0 + (Q.Y0).Y0 + C0 = 0
+    ATTENTION: there might be multiple solutions to this problem.
+    The second entry of the function selects which solution to extract.
+    If C0 = 0, the function compute_order_zero returns automatically Y0 = 0.
+    """
     function compute_order_zero(sys::system_struct,sol::Int64)
         N = size(sys.A)[1]
         if sys.C0 == sympy.zeros(N,1)[:,1]
@@ -46,6 +53,10 @@ module MORFE_Symbolic
         return x0
     end
 
+    """
+    Calculates the eigenvalues λ and left and right eigenvalues X and Y
+    for the generalized eigenvalue problem defined by (B - λA)Y = X*(B - λA) = 0.
+    """
     function generalised_eigenproblem(sys::system_struct)
         A = sys.A 
         B = sys.B     
@@ -77,7 +88,12 @@ module MORFE_Symbolic
         return [λ,Y,X]
     end
 
-    function solve_homological!(ind_set,DP::parametrisation_struct,aexp::multiexponent_struct,sys::system_struct)
+    """
+    Solves the homological equation at each order. The results are stored on data structures DP.f and DP.W,
+    as a function of symbolic coefficients present at DP.fs and DP.Ws. In order to have results as a function
+    of the system parameters, the symbolic coefficients must be substituted using the function substitutions!.
+    """
+    function solve_homological!(ind_set,DP::parametrisation_struct,sys::system_struct)
         res_ind = DP.res[:,ind_set];
         σs =  Sym("σ"*string(ind_set))#DP.σ[ind_set]
         DP.subs = [DP.subs;Dict(σs=>DP.σ[ind_set])]
@@ -108,6 +124,10 @@ module MORFE_Symbolic
         end
     end
 
+    """
+    Performs substitutions on vector DP.subs. Should be followed by a call of reduced_dynamics_substitutions!
+    and/or nonlinear_mappings_substitutions!.
+    """
     function substitutions!(DP::parametrisation_struct,substitutions)
         println("Substituting values:")
         t1 = time_ns()
@@ -126,6 +146,9 @@ module MORFE_Symbolic
         println("")
     end
 
+    """
+    Performs substitutions on the reduced dynamics coefficients. Should be called after substitutions!.
+    """
     function reduced_dynamics_substitutions!(DP::parametrisation_struct,substitutions)
         println("Substituting reduced dynamics:")
         t1 = time_ns()
@@ -144,6 +167,9 @@ module MORFE_Symbolic
         println("")
     end
     
+    """
+    Performs substitutions on the nonlinear mapping coefficients. Should be called after substitutions!.
+    """
     function nonlinear_mappings_substitutions!(DP::parametrisation_struct,substitutions)
         println("Substituting nonlinear mappings:")
         t1 = time_ns()
