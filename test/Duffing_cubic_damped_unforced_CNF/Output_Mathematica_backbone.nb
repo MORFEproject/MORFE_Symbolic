@@ -1,0 +1,4 @@
+backbone = 0;
+For[i = 1, i <= order, i++,
+   backbone += omegaRho[[i]];
+];

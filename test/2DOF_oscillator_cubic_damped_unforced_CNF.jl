@@ -140,20 +140,20 @@ function RHS_Quad(Y)
     R = Y[2*n_osc+1:2*n_osc+n_aux]      # last n_aux positions are the auxiliary variables
     # define generic quadratic and cubic nonlinearities
     # CHECK THIS PART!
-    G¹₁₁ = 0 #Sym("G¹₁₁")
-    G²₁₁ = 0;  G¹₁₂ = G²₁₁; #Sym("G²₁₁")
-    G¹₂₂ = 0;  G²₁₂ = G¹₂₂; #Sym("G¹₂₂")
-    G²₂₂ = 0 #Sym("G²₂₂")
-    H¹₁₁₁ = symbols("H1111", real = true)
-    H²₁₁₁ = symbols("H2111", real = true); H¹₁₁₂ = H²₁₁₁;
-    H¹₁₂₂ = symbols("H1122", real = true); H²₁₁₂ = H¹₁₂₂;
-    H¹₂₂₂ = symbols("H1222", real = true); H²₁₂₂ = H¹₂₂₂;
-    H²₂₂₂ = symbols("H2222", real = true)
+    G¹₁₁ = 0#symbols("G¹₁₁", real = true)
+    G²₁₁ = 0; G¹₁₂ = G²₁₁;#symbols("G²₁₁", real = true);  G¹₁₂ = G²₁₁;
+    G¹₂₂ = 0; G²₁₂ = G¹₂₂;#symbols("G¹₂₂", real = true);  G²₁₂ = G¹₂₂;
+    G²₂₂ = 0#symbols("G²₂₂", real = true)
+    H¹₁₁₁ = symbols("h¹₁₁₁", real = true)
+    H²₁₁₁ = symbols("h²₁₁₁", real = true); H¹₁₁₂ = 3*H²₁₁₁;
+    H¹₁₂₂ = symbols("h¹₁₂₂", real = true); H²₁₁₂ = H¹₁₂₂;
+    H¹₂₂₂ = symbols("h¹₂₂₂", real = true); H²₁₂₂ = 3*H¹₂₂₂;
+    H²₂₂₂ = symbols("h²₂₂₂", real = true)
     # assign to the second n_osc equations
-    F[n_osc+1] = - (G¹₁₁*U[1]^2 + 2*G¹₁₂*U[2]*U[1] + G¹₂₂*U[2]^2) -
-                   (H¹₁₁₁*U[1]*R[1] + 3*H¹₁₁₂*U[2]*R[1] + 3*H¹₁₂₂*U[1]*R[2] + H¹₂₂₂*R[2]*U[2])
-    F[n_osc+2] = - (G²₁₁*U[1]^2   + 2*G²₁₂*U[2]*U[1]   + G²₂₂*U[2]^2) -
-                   (H²₁₁₁*U[1]*R[1] + 3*H²₁₁₂*U[2]*R[1] + 3*H²₁₂₂*U[1]*R[2] + H²₂₂₂*R[2]*U[2])
+    F[n_osc+1] = - (G¹₁₁*U[1]^2 + G¹₁₂*U[2]*U[1] + G¹₂₂*U[2]^2) -
+                   (H¹₁₁₁*U[1]*R[1] + H¹₁₁₂*U[2]*R[1] + H¹₁₂₂*U[1]*R[2] + H¹₂₂₂*R[2]*U[2])
+    F[n_osc+2] = - (G²₁₁*U[1]^2   + G²₁₂*U[2]*U[1]   + G²₂₂*U[2]^2) -
+                   (H²₁₁₁*U[1]*R[1] + H²₁₁₂*U[2]*R[1] + H²₁₂₂*U[1]*R[2] + H²₂₂₂*R[2]*U[2])
     # last n_aux equations are the algebraic ones defining the auxiliary variables
     F[2*n_osc+1:2*n_osc+n_aux] = -U.^2
     return F
@@ -229,11 +229,7 @@ aexp = init_multiexponent_struct(n_rom,o)
 # this is a structure that will contain the solution of each step
 # of the parametrisation method
 # here it is only initialised with zeros
-DP = init_parametrisation_struct(n_full,n_rom,aexp.n_sets,n_aut,o)
-
-# Small damping hypotheses
-# DP.subs = [DP.subs;Dict(ξ[1]^2=>0);Dict(ξ[1]^3=>0);Dict(ξ[1]^5=>0);Dict(ξ[1]^7=>0);Dict(ξ[1]^9=>0);Dict(ξ[1]^11=>0);Dict(ξ[1]^13=>0)]
-# DP.subs = [DP.subs;Dict(ξ[2]^2=>0);Dict(ξ[2]^3=>0);Dict(ξ[2]^5=>0);Dict(ξ[2]^7=>0);Dict(ξ[2]^9=>0);Dict(ξ[2]^11=>0);Dict(ξ[2]^13=>0)]
+DP = init_parametrisation_struct(n_full,n_rom,aexp.n_sets,n_aut,n_osc,o)
 
 # DP.W is a (n_full×n_sets) matrix whose colums contain the mapping 
 # relating to each monomial 
@@ -495,5 +491,6 @@ Mathematica_output(DP, aexp, "./test/2DOF_cubic_damped_unforced_CNF/", "Output_M
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #          Realification           #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-# omega, xi = backbone_CNF(DP, aexp)
+# omega, xi = backbone_CNF(DP, aexp, ω[1])
 # backbone_output(omega, "./test/2DOF_oscillator_cubic_damped_unforced_CNF_output.txt")
+# nonlinear_damping_output(xi, "./test/2DOF_oscillator_cubic_damped_unforced_CNF_output.txt")

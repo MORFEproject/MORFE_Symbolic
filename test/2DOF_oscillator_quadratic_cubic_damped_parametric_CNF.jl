@@ -195,7 +195,7 @@ n_nonaut = 2
 n_rom = n_aut + n_nonaut
 #
 # order of the expansion
-o = 2
+o = 4
 #
 # initialise aexp
 # this is a structure containing information about all the sets

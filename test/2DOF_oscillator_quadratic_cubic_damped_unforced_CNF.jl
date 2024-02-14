@@ -140,15 +140,15 @@ function RHS_Quad(Y)
     R = Y[2*n_osc+1:2*n_osc+n_aux]      # last n_aux positions are the auxiliary variables
     # define generic quadratic and cubic nonlinearities
     # CHECK THIS PART!
-    G¹₁₁ = 0 #symbols("G¹₁₁", real = true)
+    G¹₁₁ = 0#symbols("G¹₁₁", real = true)
     G²₁₁ = symbols("G²₁₁", real = true);  G¹₁₂ = G²₁₁;
-    G¹₂₂ = 0;  G²₁₂ = G¹₂₂; #symbols("G¹₂₂", real = true)
-    G²₂₂ = 0 #symbols("G²₂₂", real = true)
+    G¹₂₂ = 0;  G²₁₂ = G¹₂₂;#symbols("G¹₂₂", real = true);  G²₁₂ = G¹₂₂;
+    G²₂₂ = 0#symbols("G²₂₂", real = true)
     H¹₁₁₁ = symbols("H¹₁₁₁", real = true)
-    H²₁₁₁ = 0; H¹₁₁₂ = H²₁₁₁; #symbols("H²₁₁₁", real = true)
-    H¹₁₂₂ = 0; H²₁₁₂ = H¹₁₂₂; #symbols("H¹₁₂₂", real = true)
-    H¹₂₂₂ = 0; H²₁₂₂ = H¹₂₂₂; #symbols("H¹₂₂₂", real = true)
-    H²₂₂₂ = 0 #symbols("H²₂₂₂", real = true)
+    H²₁₁₁ = 0; H¹₁₁₂ = H²₁₁₁;#symbols("H²₁₁₁", real = true); H¹₁₁₂ = H²₁₁₁;
+    H¹₁₂₂ = 0; H²₁₁₂ = H¹₁₂₂;#symbols("H¹₁₂₂", real = true); H²₁₁₂ = H¹₁₂₂;
+    H¹₂₂₂ = 0; H²₁₂₂ = H¹₂₂₂;#symbols("H¹₂₂₂", real = true); H²₁₂₂ = H¹₂₂₂;
+    H²₂₂₂ = 0#symbols("H²₂₂₂", real = true)
     # assign to the second n_osc equations
     F[n_osc+1] = - (G¹₁₁*U[1]^2 + 2*G¹₁₂*U[2]*U[1] + G¹₂₂*U[2]^2) -
                    (H¹₁₁₁*U[1]*R[1] + 3*H¹₁₁₂*U[2]*R[1] + 3*H¹₁₂₂*U[1]*R[2] + H¹₂₂₂*R[2]*U[2])

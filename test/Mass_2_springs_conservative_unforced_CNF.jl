@@ -83,6 +83,7 @@ K = diagm(ω.^2)
 # or simply create a diagonalised damping matrix
 # generic diagonal damping:
 ξ = create_pos_vec("ξ",n_osc)
+ξ[2] = ξ[1]
 ζ = 2*ξ.*ω
 C = diagm(ζ)
 # for the sake of readability, it is useful to specify that each oscillator is underdamped
@@ -125,7 +126,7 @@ function RHS_Lin(Y)
     # first n_osc equations is M*Uₜ = M*V
     F[1:n_osc] = M*V
     # second n_osc equations is M*Vₜ = -C*V -K*U ...
-    F[n_osc+1:2*n_osc] = -K*U
+    F[n_osc+1:2*n_osc] = -K*U -C*V
     # last n_aux equations are the algebraic ones defining the auxiliary variables
     F[2*n_osc+1:2*n_osc+n_aux] = R
     return F
@@ -407,8 +408,8 @@ for ind_set1 = 1:n_aut
     yLsᵀ = 0*transpose(yL[:,ind_set1])
     for i_full=1:n_full
         if yL[i_full,ind_set1] != 0
-            yLsᵀ[i_full] = Sym("yL"*string(i_full)*"|"*string(ind_set1))
-            DP.subs = [DP.subs;Dict(Sym("yL"*string(i_full)*"|"*string(ind_set1))=>yL[i_full,ind_set1])]
+            yLsᵀ[i_full] = Sym("yL"*string(i_full)*"0"*string(ind_set1))
+            DP.subs = [DP.subs;Dict(Sym("yL"*string(i_full)*"0"*string(ind_set1))=>yL[i_full,ind_set1])]
         end
     end
     DP.YLᵀA[ind_set1,:] = yLsᵀ*sys.A    #transpose(yL[:,ind_set1])*sys.A    
@@ -471,24 +472,27 @@ for p=2:o
     end
 end
 
+Mathematica_output(DP, aexp, "./test/Mass_2_springs_conservative_unforced_CNF/", "Output_Mathematica",
+                      print_reduced_dynamics = true, print_nonlinear_mappings = true)
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #          Substitutions           #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-substitutions = [[Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc], [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]]
-substitutions!(DP, substitutions)
-reduced_dynamics_substitutions!(DP, substitutions)
-nonlinear_mappings_substitutions!(DP, substitutions)
+# substitutions = [[Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc], [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]]
+# substitutions!(DP, substitutions)
+# reduced_dynamics_substitutions!(DP, substitutions)
+# nonlinear_mappings_substitutions!(DP, substitutions)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #             Printing             #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-reduced_dynamics_latex_output(DP, aexp, "./test/Mass_2_springs_conservative_unforced_CNF_output.txt")
-nonlinear_mappings_latex_output(DP, aexp, "./test/Mass_2_springs_conservative_unforced_CNF_output.txt")
+# reduced_dynamics_latex_output(DP, aexp, "./test/Mass_2_springs_damped_unforced_CNF_output.txt")
+# nonlinear_mappings_latex_output(DP, aexp, "./test/Mass_2_springs_damped_unforced_CNF_output.txt")
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #          Realification           #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-omega, xi = backbone_CNF(DP, aexp)
-amplitude = physical_amplitudes_CNF(DP, aexp)
-backbone_output(omega, "./test/Mass_2_springs_conservative_unforced_CNF_output.txt")
-physical_amplitudes_output(amplitude, "./test/Mass_2_springs_conservative_unforced_CNF_output.txt")
+# omega, xi = backbone_CNF(DP, aexp)
+# amplitude = physical_amplitudes_CNF(DP, aexp)
+# backbone_output(omega, "./test/Mass_2_springs_damped_unforced_CNF_output.txt")
+# physical_amplitudes_output(amplitude, "./test/Mass_2_springs_damped_unforced_CNF_output.txt")
