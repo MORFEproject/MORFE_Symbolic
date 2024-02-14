@@ -1,8 +1,5 @@
-using MORFE_Symbolic
 using SymPy
 using Latexify
-
-#include("MORFE_Symbolic.jl")
 
 """
 Auxiliary function for latex printing. Creates non commutative monoms so that they stay in
@@ -48,6 +45,7 @@ if deg1 < deg2, then m1 < m2. If deg1 = deg2, then the comparison is made
 looking at the degrees of each z_i in order. For example:
     - z1^3 * z2^4 * z3^1 > z1^3 * z2^3 * z3^3, because the z2 exponent is
     greater for the first monomial.
+This function is primarely intended for use inside the module, and not for exportation.
 """
 function multiexponent_lt(x, y)
     sum(x) < sum(y) && return true
@@ -199,17 +197,29 @@ function nonlinear_mappings_latex_output(DP::parametrisation_struct, aexp::multi
             throw(ArgumentError("Result type should be either complex, real or modal!"))
         end 
     end
+
+    if result == "modal"
+        printed_variable = "y"
+    else
+        printed_variable = "u"
+    end
     
     latex_output = "\\begin{align}"
     for i in eachindex(u)
         expr = poly_from_expr(u[i], gens = z)
         expr_monoms = expr[1].monoms()
         expr_coeffs = expr[1].coeffs()
-        if i <= DP.n_aut/2
-            latex_output *= "\nu_{$(i)} &="
+        if result == "modal"
+            latex_output *= "\ny_{$(i)} &="
         else
-            latex_output *= "\nv_{$(i-Int(DP.n_aut/2))} &="
-        end 
+            if i <= DP.n_osc
+                latex_output *= "\nu_{$(i)} &="
+            elseif i <= 2*DP.n_osc
+                latex_output *= "\nv_{$(i-DP.n_osc)} &="
+            else
+                latex_output *= "\nr_{$(i-2*DP.n_osc)} &="
+            end 
+        end
         latex_output = latex_code_for_polynomial_expression(expr_coeffs, expr_monoms, latex_output, normal_coordinate)
         latex_output *= "\\\\"
     end
@@ -383,4 +393,110 @@ function physical_amplitudes_output(ampli_rho, output_file = nothing; file_mode:
         end 
     end
     println("Physical amplitudes printed\n")
-end 
+end
+
+function Mathematica_output(DP::parametrisation_struct, aexp::multiexponent_struct, directory, file_basename;
+    print_reduced_dynamics = true, print_nonlinear_mappings = true)
+    mathematica_code = sympy.printing.mathematica.mathematica_code
+
+    println("Mathematica output started")
+
+    isdir(directory) || mkdir(directory)
+    path = joinpath(directory, file_basename * "_variables.nb")
+    open(path, "w") do file
+        write(file, "naut = $(DP.n_aut);\n")
+        write(file, "nfull = $(DP.n_full);\n")
+        write(file, "nsets = $(DP.n_sets);\n")
+        write(file, "order = $(DP.order);\n")
+        for i in eachindex(DP.subs)
+            for key in keys(DP.subs[i])
+                if key != 0
+                    math_code = mathematica_code(key) * " = FullSimplify[" * mathematica_code(DP.subs[i][key]) * "];\n"
+                    write(file, math_code) 
+                end
+            end
+        end
+        write(file, "monoms = ConstantArray[0,$(DP.n_sets)];\n")
+        for i_set = 1:DP.n_sets
+            z = [Sym("z$(i)") for i=1:DP.n_rom]
+            monom = prod(z .^ aexp.mat[:,i_set])
+            monom = mathematica_code(monom)
+            write(file, "monoms[[$(i_set)]] = " * monom * ";\n")
+        end
+        if print_reduced_dynamics
+            write(file, "f = ConstantArray[0,{$(DP.n_rom),$(DP.n_sets)}];\n")
+            for i_var = 1:DP.n_rom
+                for i_set = 1:DP.n_sets
+                    write(file, "f[[$(i_var),$(i_set)]] = FullSimplify[" * mathematica_code(DP.f[i_var,i_set]) * "];\n")
+                end
+            end
+        end
+        if print_nonlinear_mappings
+            write(file, "W = ConstantArray[0,{$(DP.n_full),$(DP.n_sets)}];\n")
+            for i_var = 1:DP.n_full
+                for i_set = 1:DP.n_sets
+                    write(file, "W[[$(i_var),$(i_set)]] = FullSimplify[" * mathematica_code(DP.W[i_var,i_set]) * "];\n")
+                end
+            end
+        end
+        if print_cartesian_realified_reduced_dynamics
+            write(file, "fr = ConstantArray[0,{$(DP.n_rom),$(DP.n_sets)}];\n")
+            for i_var = 1:DP.n_rom
+                for i_set = 1:DP.n_sets
+                    write(file, "fr[[$(i_var),$(i_set)]] = FullSimplify[" * mathematica_code(DP.fr[i_var,i_set]) * "];\n")
+                end
+            end
+        end
+        if print_cartesian_realified_nonlinear_mappings
+            write(file, "Wr = ConstantArray[0,{$(DP.n_full),$(DP.n_sets)}];\n")
+            for i_var = 1:DP.n_full
+                for i_set = 1:DP.n_sets
+                    write(file, "Wr[[$(i_var),$(i_set)]] = FullSimplify[" * mathematica_code(DP.Wr[i_var,i_set]) * "];\n")
+                end
+            end
+        end
+        if print_backbone
+            write(file, "omegaRho = ConstantArray[0,$(DP.order)];\n")
+            for i = 1:DP.order
+                write(file, "omegaRho[[$(i)]] = FullSimplify[" * mathematica_code(omega_rho[i]) * "];\n")
+            end
+        end
+        if print_damping
+            write(file, "xiRho = ConstantArray[0,$(DP.order)];\n")
+            for i = 1:DP.order
+                write(file, "xiRho[[$(i)]] = FullSimplify[" * mathematica_code(xi_rho[i]) * "];\n")
+            end
+        end
+        if print_physical_amplitudes
+            write(file, "ampliRho = ConstantArray[0,$(DP.order)];\n")
+            for i = 1:DP.order
+                write(file, "ampliRho[[$(i)]] = FullSimplify[" * mathematica_code(ampli_rho[i]) * "];\n")
+            end
+        end
+    end
+
+    if print_reduced_dynamics
+        path = joinpath(directory, file_basename * "_reduced_dynamics.nb")
+        open(path, "w") do file
+            write(file, "fres = ConstantArray[0, naut];\n")
+            write(file, "For[ivar = 1, ivar <= naut, ivar++,\n")
+            write(file, "   For[iset = 1, iset <= nsets, iset++,\n")
+            write(file, "       fres[[ivar]] += f[[ivar, iset]]*monoms[[iset]];\n")
+            write(file, "   ];\n")
+            write(file, "];\n")
+        end
+    end
+
+    if print_nonlinear_mappings
+        path = joinpath(directory, file_basename * "_nonlinear_mappings.nb")
+        open(path, "w") do file
+            write(file, "Wres = ConstantArray[0, nfull];\n")
+            write(file, "For[ivar = 1, ivar <= nfull, ivar++,\n")
+            write(file, "   For[iset = 1, iset <= nsets, iset++,\n")
+            write(file, "       Wres[[ivar]] += W[[ivar, iset]]*monoms[[iset]];\n")
+            write(file, "   ];\n")
+            write(file, "];\n")
+        end
+    end
+    println("Mathematica output finished")
+end

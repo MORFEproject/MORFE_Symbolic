@@ -1,3 +1,7 @@
+"""
+Data structure defining the departing (full) system of equations:
+    A.Yₜ = B.Y + (Q.Y).Y + C0 + C⁺ₑₓₜ exp(+ im Ω t) + C⁻ₑₓₜ exp(-im Ω t)
+"""
 mutable struct system_struct
     A::Matrix{Sym}
     B::Matrix{Sym}
@@ -7,6 +11,9 @@ mutable struct system_struct
     C⁻ₑₓₜ::Vector{Sym}
 end
 
+"""
+Extracts the tensor Q from the quadratic function defining the system.
+"""
 function extract_Quad(QuadFun,N::Int64)
     Q_tens = [[Sym(0),0,0,0]]
     Y = create_gen_vec("Y",N)
@@ -24,6 +31,9 @@ function extract_Quad(QuadFun,N::Int64)
     return Q_tens[2:end]
 end
 
+"""
+Extracts a matrix equivalent to the linear function LinFun.
+"""
 function extract_Lin(LinFun,N::Int64)
     Y = create_gen_vec("Y",N)
     F = LinFun(Y)
@@ -36,6 +46,9 @@ function extract_Lin(LinFun,N::Int64)
     return L_mat
 end
 
+"""
+Applies the Q tensor on vectors Y1 and Y2 and gives back the resulting vector.
+"""
 function Q_fun(Y1::Vector{Sym},Y2::Vector{Sym},Q::Vector{Vector{Sym}})
     F = Y1*0
     for entry = 1:length(Q)

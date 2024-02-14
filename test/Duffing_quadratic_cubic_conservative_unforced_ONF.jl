@@ -4,7 +4,7 @@ push!(LOAD_PATH,joinpath(pwd(),"src"))
 using MORFE_Symbolic
 using Combinatorics
 
-# include("./../src/output.jl")
+include("./../src/output.jl")
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #                            Definition of original system                                       #
@@ -60,8 +60,8 @@ M = diagm(sympy.ones(n_osc,1)[:,1])
 # K = k
 #
 # or simply define a diagonal matrix with entries ωⱼ^2:
-n_osc = size(M)[1]
-ω = create_pos_vec("ω",n_osc)
+# n_osc = size(M)[1]
+ω=create_pos_vec("ω",n_osc)
 K = diagm(ω.^2)
 #
 # if nonconservative
@@ -72,13 +72,13 @@ K = diagm(ω.^2)
 #
 # or simply create a diagonalised damping matrix
 # generic diagonal damping:
-ξ = create_real_vec("ξ",n_osc)
+ξ=create_pos_vec("ξ",n_osc)
 ζ = 2*ξ.*ω
 C = diagm(ζ)
 # for the sake of readability, it is useful to specify that each oscillator is underdamped
 # which means that the quantity   δⱼ := √(1-ξⱼ^2) is positive
 # definition of δ = √(1-ξ.^2) will be used later for simplification
-δ = create_pos_vec("δ",n_osc)
+δ=create_pos_vec("δ",n_osc)
 
 # the total size of the DAE system will be 
 # the size of the oscillatory system in first order form (2*n_osc)
@@ -86,7 +86,7 @@ C = diagm(ζ)
 # is n_osc = 1 and the nonlinearity is cubic, 
 # only one auxiliary variable is needed (R₁ = U₁^2)
 n_aux = 1
-n_full = 2*n_osc + n_aux
+n_full = 2*n_osc+n_aux
 
 # define the LHS as a function LHS_Lin(Yₜ)
 # the matrix A such that LHS_Lin(Yₜ) = A.Yₜ
@@ -115,7 +115,9 @@ function RHS_Lin(Y)
     # first n_osc equations is M*Uₜ = M*V
     F[1:n_osc] = M*V
     # second n_osc equations is M*Vₜ = -C*V -K*U ...
-    F[n_osc+1:2*n_osc] = -C*V-K*U
+    #F[n_osc+1:2*n_osc] = -C*V-K*U
+    # NB : pour rendre le système conservatif, ici j'ai viré l'amortissement.
+    F[n_osc+1:2*n_osc] = -K*U
     # last n_aux equations are the algebraic ones defining the auxiliary variables
     F[2*n_osc+1:2*n_osc+n_aux] = R
     return F
@@ -129,9 +131,11 @@ function RHS_Quad(Y)
     U = Y[1:n_osc]                        # first n_osc positions is U
     R = Y[2*n_osc+1:2*n_osc+n_aux]      # last n_aux positions are the auxiliary variables
     # define only cubic nonlinearity
-    h = symbols("h", real=true)
+    g = Sym("g")
+    h = Sym("h")
     # assign to the second n_osc equations
-    F[n_osc+1] = -  h*U[1]*R[1]
+    # la ligne ci-dessous pour quad et cub: commentée
+     F[n_osc+1] = -  h*U[1]*R[1] - g*U[1]*U[1]
     # last n_aux equations are the algebraic ones defining the auxiliary variables
     F[2*n_osc+1:2*n_osc+n_aux] = -U.^2
     return F
@@ -144,8 +148,8 @@ C0 = sympy.zeros(n_full,1)[:,1]
 C⁺ₑₓₜ = sympy.zeros(n_full,1)[:,1]
 C⁻ₑₓₜ = sympy.zeros(n_full,1)[:,1]
 # to have a κ*cosin(Ωt) excitation on U₁
-C⁺ₑₓₜ[n_osc+1] = 1/Sym(2)*symbols("κ",positive=true)
-C⁻ₑₓₜ[n_osc+1] = 1/Sym(2)*symbols("κ",positive=true)
+C⁺ₑₓₜ[n_osc+1] = -1/Sym(2)*symbols("κ",positive=true)
+C⁻ₑₓₜ[n_osc+1] = -1/Sym(2)*symbols("κ",positive=true)
 # to have a κ*sin(Ωt) excitation on U₁
 # C⁺ₑₓₜ[n_osc+1] = + im/Sym(2)*symbols("κ",positive=true)
 # C⁻ₑₓₜ[n_osc+1] = -  im/Sym(2)*symbols("κ",positive=true)
@@ -181,7 +185,7 @@ n_nonaut = 0
 n_rom = n_aut + n_nonaut
 #
 # order of the expansion
-o = 3
+o = 5
 #
 # initialise aexp
 # this is a structure containing information about all the sets
@@ -218,7 +222,7 @@ DP = init_parametrisation_struct(n_full,n_rom,aexp.n_sets,n_aut,n_osc,o)
 
 # resonance conditions:
 # create a generic λ₀ vector (n_rom×1) 
-λ₀ = create_gen_vec("λ",n_rom)
+λ₀ = create_gen_vec("λ₀",n_rom)
 # the first n_aut entries of λ₀ represent the master eigenvalues that will be chosen later
 # remember to keep the same order here and there
 # which means that if here two consecutive entries represent a pair, also later they must
@@ -231,13 +235,13 @@ conditions = [λ₀[2] =>-λ₀[1]]
 
 σ₀ = transpose(aexp.mat)*λ₀
 
-style = "CNF"
+style = "ONF"
 
 if style == "Graph"
     DP.res = DP.res.+1
 else
     for in = 1:n_aut
-        if style == "RNF"            
+        if style == "RNF"
             DP.res[in,:] = convert(Vector{Int},mysub(abs.(σ₀).-abs(λ₀[in]),conditions) .== 0)
         end
         if style == "CNF"
@@ -247,8 +251,8 @@ else
 end
 
 if style == "ONF"    
-    DP.res=[0  1  1  0  0  0  1  1  1  1;
-            0  1  1  0  0  0  1  1  1  1]
+    DP.res=[0  1  1  0  0  0  1  1  1  1  0  0  0  0  0  1  1  1  1  1  1;
+            0  1  1  0  0  0  1  1  1  1  0  0  0  0  0  1  1  1  1  1  1]
 end
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -286,8 +290,8 @@ ind_setG0 = aexp.get(aexp.get([p0 ind_set0]))
 DP.W[:,ind_setG0] = Y0
 for i_full=1:n_full
     if DP.W[i_full,ind_setG0] != 0
-        DP.Ws[i_full,ind_setG0] = Sym("W"*string(i_full)*"0"*string(ind_setG0))
-        DP.subs = [DP.subs;Dict(Sym("W"*string(i_full)*"0"*string(ind_setG0))=>DP.W[i_full,ind_setG0])]
+        DP.Ws[i_full,ind_setG0] = Sym("W"*string(i_full)*"|"*string(ind_setG0))
+        DP.subs = [DP.subs;Dict(Sym("W"*string(i_full)*"|"*string(ind_setG0))=>DP.W[i_full,ind_setG0])]
     end
 end
 # if the function compute_order_zero struggles
@@ -342,18 +346,16 @@ sys.B+= ∇Q0
 # Λ[n_aux+3:n_aux+4] are relative to ω₂
 # and so on
 # here the master are chosen as those relating to ω₁:
-yR = YR[:,n_aux+2:-1:n_aux+1] #OK
-yL = YL[:,n_aux+2:-1:n_aux+1] #OK
+#yR = YR[:,n_aux+1:n_aux+2]
+yR = YR[:,n_aux+2:-1:n_aux+1] #?? to test for having +i omega first....
+#yL = YL[:,n_aux+1:n_aux+2]
+yL = YL[:,n_aux+2:-1:n_aux+1] #?? to test
 #test normalisation - a revoir // tester //OK this is the good one !
-#yR[:,1]=-yR[:,1]/(1/ω[1])/im
-#yR[:,2]=yR[:,2]/(1/ω[1])/im
-# Ale normalisation
-yR[:,1]=yR[:,1]/(yR[1,1])
-yR[:,2]=yR[:,2]/(yR[1,2])
+yR[:,1]=-yR[:,1]/(1/ω[1])/im
+yR[:,2]=yR[:,2]/(1/ω[1])/im
 
 #λ = Λ[n_aux+1:n_aux+2]
 λ = Λ[n_aux+2:-1:n_aux+1] #to test !!
-
 # any choice is possible but the sorting is not known before launching the script!
 # one must then look at the eigenvalues sorting, then choose the masters
 # after having chosen the master, 
@@ -372,8 +374,8 @@ for ind_set1 = 1:n_aut
     DP.W[:,ind_setG1] = yR[:,ind_set1]
     for i_full=1:n_full
         if DP.W[i_full,ind_setG1] != 0
-            DP.Ws[i_full,ind_setG1] = Sym("W"*string(i_full)*"0"*string(ind_setG1))
-            DP.subs = [DP.subs;Dict(Sym("W"*string(i_full)*"0"*string(ind_setG1))=>DP.W[i_full,ind_setG1])]
+            DP.Ws[i_full,ind_setG1] = Sym("W"*string(i_full)*"|"*string(ind_setG1))
+            DP.subs = [DP.subs;Dict(Sym("W"*string(i_full)*"|"*string(ind_setG1))=>DP.W[i_full,ind_setG1])]
         end
     end
     # assign the chosen master eigenvalue to the corresponding DP.f
@@ -385,8 +387,8 @@ for ind_set1 = 1:n_aut
     yRs = 0*yR[:,ind_set1]
     for i_full=1:n_full
         if yR[i_full,ind_set1] != 0
-            yRs[i_full] = Sym("yR"*string(i_full)*"0"*string(ind_set1))
-            DP.subs = [DP.subs;Dict(Sym("yR"*string(i_full)*"0"*string(ind_set1))=>yR[i_full,ind_set1])]
+            yRs[i_full] = Sym("yR"*string(i_full)*"|"*string(ind_set1))
+            DP.subs = [DP.subs;Dict(Sym("yR"*string(i_full)*"|"*string(ind_set1))=>yR[i_full,ind_set1])]
         end
     end
     DP.AYR[:,ind_set1] = sys.A*yRs# yR[:,ind_set1]
@@ -395,8 +397,8 @@ for ind_set1 = 1:n_aut
     yLsᵀ = 0*transpose(yL[:,ind_set1])
     for i_full=1:n_full
         if yL[i_full,ind_set1] != 0
-            yLsᵀ[i_full] = Sym("yL"*string(i_full)*"0"*string(ind_set1))
-            DP.subs = [DP.subs;Dict(Sym("yL"*string(i_full)*"0"*string(ind_set1))=>yL[i_full,ind_set1])]
+            yLsᵀ[i_full] = Sym("yL"*string(i_full)*"|"*string(ind_set1))
+            DP.subs = [DP.subs;Dict(Sym("yL"*string(i_full)*"|"*string(ind_set1))=>yL[i_full,ind_set1])]
         end
     end
     DP.YLᵀA[ind_set1,:] = yLsᵀ*sys.A    #transpose(yL[:,ind_set1])*sys.A    
@@ -460,30 +462,18 @@ for p=2:o
 end
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-#          Substitutions           #
+#             Printing             #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 substitutions = [[Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc], [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]]
 substitutions!(DP, substitutions)
 reduced_dynamics_substitutions!(DP, substitutions)
-# nonlinear_mappings_substitutions!(DP, substitutions)
+nonlinear_mappings_substitutions!(DP, substitutions)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #             Printing             #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-reduced_dynamics_latex_output(DP, aexp, "./test/Duffing_cubic_damped_unforced_CNF_output.txt")
-# nonlinear_mappings_latex_output(DP, aexp, "./test/Duffing_cubic_damped_unforced_CNF_output.txt")
+reduced_dynamics_latex_output(DP, aexp, "./test/Duffing_quadratic_cubic_conservative_unforced_ONF_output.txt")
+nonlinear_mappings_latex_output(DP, aexp, "./test/Duffing_quadratic_cubic_conservative_unforced_ONF_output.txt")
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-#          Realification           #
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-# real, imaginary = polar_realification(DP, aexp)
-# cartesian_realification!(DP, aexp, n_aux)
-
-# omega, xi = backbone_CNF(DP, aexp)
-# amplitude = physical_amplitudes_CNF(DP, aexp)
-
-# Mathematica_output(DP, aexp, "./test/Duffing_cubic_damped_unforced_CNF", "Output_Mathematica",
-#                     print_reduced_dynamics = true, print_nonlinear_mappings = true)#,
-#                     # print_backbone = true, omega_rho = omega,
-#                     # print_damping = true, xi_rho = xi, 
-#                     # print_physical_amplitudes = true, ampli_rho = amplitude)
+modal_coordinates_from_physical_coordinates!(DP,yR,n_osc)
+nonlinear_mappings_latex_output(DP, aexp, "./test/Duffing_quadratic_cubic_conservative_unforced_ONF_output.txt", result = "modal")

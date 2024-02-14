@@ -1,8 +1,5 @@
 using SymPy
 
-include("parametrisation.jl")
-include("multiexponent.jl")
-
 # At present limited to one master mode with one harmonic excitation 
 function polar_realification(DP::parametrisation_struct,aexp::multiexponent_struct)
     get_re_im = sympy.core.expr.Expr.as_real_imag

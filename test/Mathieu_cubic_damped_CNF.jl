@@ -134,7 +134,7 @@ function RHS_Quad(Y)
     # define only cubic nonlinearity
     h = symbols("h", real = true)
     # assign to the second n_osc equations
-    F[n_osc+1] = - h*U[1]*R[1] + U[1]*R[2]
+    F[n_osc+1] = -  h*U[1]*R[1] + U[1]*R[2]
     # last n_aux equations are the algebraic ones defining the auxiliary variables
     F[2*n_osc+1:2*n_osc+n_aux-1] = -U.^2
     F[2*n_osc+n_aux] = 0
@@ -185,7 +185,7 @@ n_nonaut = 2
 n_rom = n_aut + n_nonaut
 #
 # order of the expansion
-o = 3
+o = 5
 #
 # initialise aexp
 # this is a structure containing information about all the sets
@@ -471,14 +471,14 @@ end
 # substitutions = [[Dict(h => h_val) for i=1:n_osc], [Dict(ξ[i] => xi_val) for i=1:n_osc], [Dict(δ[i] => sqrt(1-xi_val^2)) for i=1:n_osc], [Dict(ω[i] => omega_val) for i=1:n_osc], [Dict(symbols("Ω",positive=true) => omega_val/3.0) for i=1:n_osc],[Dict(symbols("κ",positive=true) => kappa_val) for i=1:n_osc]]
 
 substitutions = [[Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc], [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]]
-# Mathematica_output(DP, aexp, "./test/Mathieu_cubic_damped_CNF/", "Output_Mathematica",
+# Mathematica_output(DP, aexp, "./test/Duffing_cubic_damped_forced_CNF/Subharmonic", "Output_Mathematica",
 #                     print_reduced_dynamics = true, print_nonlinear_mappings = true)
 substitutions!(DP, substitutions)
 reduced_dynamics_substitutions!(DP, substitutions)
-# reduced_dynamics_latex_output(DP, aexp, "./test/Mathieu_cubic_damped_CNF_output.txt")
+reduced_dynamics_latex_output(DP, aexp, "./test/Mathieu_cubic_damped_CNF_output.txt")
 
-# nonlinear_mappings_substitutions!(DP, substitutions)
-# nonlinear_mappings_latex_output(DP, aexp, "./test/Mathieu_cubic_damped_CNF_output.txt")
+nonlinear_mappings_substitutions!(DP, substitutions)
+nonlinear_mappings_latex_output(DP, aexp, "./test/Mathieu_cubic_damped_CNF_output.txt")
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #             Printing             #
@@ -494,8 +494,8 @@ reduced_dynamics_substitutions!(DP, substitutions)
 # amplitude = physical_amplitudes_CNF(DP, aexp, o)
 # physical_amplitudes_output(amplitude, "./test/Duffing_cubic_damped_forced_CNF_output.txt")
 
-cartesian_realification!(DP, aexp, n_aux)
-matcont(DP, aexp)
+# cartesian_realification!(DP, aexp, n_aux)
+# matcont(DP, aexp)
 # open("./test/Duffing_cubic_damped_forced_CNF_output_matlab.txt", "w") do file
 #     # write(file, "Primary resonance:\n")
 #     # write(file, "Reduced dynamics:\n")

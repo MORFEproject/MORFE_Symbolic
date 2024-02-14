@@ -1,3 +1,9 @@
+"""
+Data structure containing all the information about the parametrisation.
+Naming conventions are the same as in the paper:
+A. Vizzaccaro, G. Gobat, A. Frangi, C. Touze'. Direct parametrisation of invariant manifolds 
+for non-autonomous forced systems including superharmonic resonances (2023).
+"""
 mutable struct parametrisation_struct
     RHS_d::Matrix{Sym}
     RHS_Q::Matrix{Sym}
@@ -21,14 +27,16 @@ mutable struct parametrisation_struct
     order::Int
 end
 
+"""
+Initializes the parametrisation_struct
+"""
 function init_parametrisation_struct(n_full::Int64,n_rom::Int64,n_sets::Int64,n_aut::Int64,n_osc::Int64,order::Int64)
-    mat_Nxns = sympy.zeros(n_full,n_sets); # RHS and W    
-    mat_nrxns = sympy.zeros(n_rom,n_sets);# f
-    vec_1xns = sympy.zeros(1,n_sets);          # σ
-    mat_naxns = sympy.zeros(n_aut,n_sets);   # resonances of index_set with λₐᵤₜ
-    mat_Nxna = sympy.zeros(n_full,n_aut);    # borders of homological matrix (YLᵀ*A and A*YR)
-    vec_subs=[Dict(Sym(0)=>Sym(0));Dict(Sym(0)=>Sym(0))]
-    #
+    mat_Nxns = sympy.zeros(n_full,n_sets);                 # RHS and W    
+    mat_nrxns = sympy.zeros(n_rom,n_sets);                 # f
+    vec_1xns = sympy.zeros(1,n_sets);                      # σ
+    mat_naxns = sympy.zeros(n_aut,n_sets);                 # resonances of index_set with λₐᵤₜ
+    mat_Nxna = sympy.zeros(n_full,n_aut);                  # borders of homological matrix (YLᵀ*A and A*YR)
+    vec_subs = [Dict(Sym(0)=>Sym(0));Dict(Sym(0)=>Sym(0))] # subs 
     return parametrisation_struct(
         0*mat_Nxns,0*mat_Nxns,0*mat_Nxns,0*mat_Nxns,0*mat_Nxns,0*mat_Nxns,
         0*mat_nrxns,0*mat_nrxns,0*mat_nrxns,

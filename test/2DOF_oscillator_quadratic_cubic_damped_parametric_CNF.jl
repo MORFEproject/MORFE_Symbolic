@@ -464,21 +464,21 @@ for p=2:o
     end
 end
 
-Mathematica_output(DP, aexp, "./test/2DOF_quadratic_cubic_damped_parametric_CNF/", "Output_Mathematica",
-                   print_reduced_dynamics = true, print_nonlinear_mappings = true)
+# Mathematica_output(DP, aexp, "./test/2DOF_quadratic_cubic_damped_parametric_CNF/", "Output_Mathematica",
+#                    print_reduced_dynamics = true, print_nonlinear_mappings = true)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #          Substitutions           #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-# substitutions = [[Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc], [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]]
-# substitutions!(DP, substitutions)
-# reduced_dynamics_substitutions!(DP, substitutions)
-# reduced_dynamics_latex_output(DP, aexp, "./test/2DOF_oscillator_quadratic_cubic_damped_parametric_CNF_output.txt")
+substitutions = [[Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc], [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]]
+substitutions!(DP, substitutions)
+reduced_dynamics_substitutions!(DP, substitutions)
+reduced_dynamics_latex_output(DP, aexp, "./test/2DOF_oscillator_quadratic_cubic_damped_parametric_CNF_output.txt")
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #             Printing             #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-# nonlinear_mappings_substitutions!(DP, substitutions)
-# nonlinear_mappings_latex_output(DP, aexp, "./test/2DOF_oscillator_quadratic_cubic_damped_parametric_CNF_output.txt")
+nonlinear_mappings_substitutions!(DP, substitutions)
+nonlinear_mappings_latex_output(DP, aexp, "./test/2DOF_oscillator_quadratic_cubic_damped_parametric_CNF_output.txt")
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #          Realification           #

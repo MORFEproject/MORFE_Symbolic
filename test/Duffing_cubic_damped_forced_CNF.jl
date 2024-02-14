@@ -184,7 +184,7 @@ n_nonaut = 2
 n_rom = n_aut + n_nonaut
 #
 # order of the expansion
-o = 3
+o = 5
 #
 # initialise aexp
 # this is a structure containing information about all the sets
@@ -230,7 +230,7 @@ DP = init_parametrisation_struct(n_full,n_rom,aexp.n_sets,n_aut,o)
 # let us assume that the rom is an unforced oscillator 
 # then the conditions of near resonances should be written as:
 # conditions = [λ₀[2] =>-λ₀[1]]
-conditions = [λ₀[2] =>-λ₀[1],λ₀[4] =>-λ₀[3], λ₀[3] =>3*λ₀[1]]
+conditions = [λ₀[2] =>-λ₀[1],λ₀[4] =>-λ₀[3],λ₀[3] =>3*λ₀[1]]
 
 σ₀ = transpose(aexp.mat)*λ₀
 
@@ -470,8 +470,8 @@ end
 # substitutions = [[Dict(h => h_val) for i=1:n_osc], [Dict(ξ[i] => xi_val) for i=1:n_osc], [Dict(δ[i] => sqrt(1-xi_val^2)) for i=1:n_osc], [Dict(ω[i] => omega_val) for i=1:n_osc], [Dict(symbols("Ω",positive=true) => omega_val/3.0) for i=1:n_osc],[Dict(symbols("κ",positive=true) => kappa_val) for i=1:n_osc]]
 
 substitutions = [[Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc], [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]]
-Mathematica_output(DP, aexp, "./test/Duffing_cubic_damped_forced_CNF/Subharmonic", "Output_Mathematica",
-                    print_reduced_dynamics = true, print_nonlinear_mappings = true)
+# Mathematica_output(DP, aexp, "./test/Duffing_cubic_damped_forced_CNF/Subharmonic", "Output_Mathematica",
+#                     print_reduced_dynamics = true, print_nonlinear_mappings = true)
 substitutions!(DP, substitutions)
 reduced_dynamics_substitutions!(DP, substitutions)
 reduced_dynamics_latex_output(DP, aexp, "./test/Duffing_cubic_damped_forced_CNF_output.txt")
