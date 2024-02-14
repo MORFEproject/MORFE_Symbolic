@@ -2,8 +2,12 @@ using SymPy
 using LinearAlgebra
 push!(LOAD_PATH,joinpath(pwd(),"src"))
 using MORFE_Symbolic
+using Combinatorics
 
 include("./../src/output.jl")
+#include("./../src/MORFE_Symbolic.jl")
+#include("./../src/basic_functionalities.jl")
+
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #                            Definition of original system                                       #
@@ -14,17 +18,13 @@ include("./../src/output.jl")
 Example of system definition with quadratic recast and first order
 
 M Uₜ = M V
-M Vₜ = - K U - C V - G₁₁ U₁² - G₁₂ U₁₂ - G₂₂ U₂² - H₁₁₁ R₁ U₁ - H₁₁₂ R₁ U₂ - H₁₂₂ U₁ R₂ - H₂₂₂ U₂ R₂  - F0 - F⁺ₑₓₜ exp(+ im Ω t) + F⁻ₑₓₜ exp(-im Ω t)
+M Vₜ = - K U - C V - H₁₁₁ R₁ U₁  - F0 - F⁺ₑₓₜ exp(+ im Ω t) + F⁻ₑₓₜ exp(-im Ω t)
     0 = R₁ - U₁²
-    0 = R₂ - U₂²
 
 
 Y[1] = U₁
-Y[2] = U₂
-Y[3] = V₁
-Y[4] = V₂
-Y[5] = R₁
-Y[6] = R₂
+Y[2] = V₁
+Y[3] = R₁
 
 The user can write the equations in the functions:
 LHS_Lin(Yₜ) = RHS_Lin(Y) + RHS_Quad(Y) + C0 + C⁺ₑₓₜ exp(+ im Ω t) + C⁻ₑₓₜ exp(-im Ω t)
@@ -50,58 +50,46 @@ sys.C⁻ₑₓₜ::Vector{Sym}
 
 # input any mass matrix:
 #
-# m₁₁ = symbols("m₁₁",positive = true)
-# m₁₂ = symbols("m₁₂",positive = true)
-# m₂₂ = symbols("m₂₂",positive = true)
-# M = Matrix{Sym}([[m₁₁ m₁₂];[m₁₂ m₂₂]])
+# m = symbols("m",positive = true)
+# M = m
 #
 # or simply define an identity mass matrix of size n_osc:
 #
-n_osc = 2 # size of the original system in oscillatory form
+n_osc = 1 # size of the original system in oscillatory form
 M = diagm(sympy.ones(n_osc,1)[:,1])
 #
 # define a generic stiffness matrix:
-# k₁₁ = symbols("k₁₁",positive = true)
-# k₁₂ = symbols("k₁₂",real = true)
-# k₂₂ = symbols("k₂₂",positive = true)
-# K = Matrix{Sym}([[k₁₁ k₁₂];[k₁₂ k₂₂]])
+# k = symbols("k",positive = true)
+# K = k
 #
 # or simply define a diagonal matrix with entries ωⱼ^2:
 n_osc = size(M)[1]
 ω = create_pos_vec("ω",n_osc)
-ω[1] = Sym(1)
 K = diagm(ω.^2)
 #
 # if nonconservative
 # 
 # create a generic damping matrix:
-# c₁₁ = symbols("c₁₁",positive = true)
-# c₁₂ = symbols("c₁₂",real = true)
-# c₂₁ = symbols("c₂₁",real = true)
-# c₂₂ = symbols("c₂₂",positive = true)
-# C = Matrix{Sym}([[c₁₁ c₁₂];[c₁₂ c₂₂]])
+# c = symbols("c",positive = true)
+# C = c
 #
 # or simply create a diagonalised damping matrix
 # generic diagonal damping:
 ξ = create_pos_vec("ξ",n_osc)
-ξ[1] = symbols("ξ", positive = true)
-ξ[2] = ξ[1]
 ζ = 2*ξ.*ω
 C = diagm(ζ)
 # for the sake of readability, it is useful to specify that each oscillator is underdamped
 # which means that the quantity   δⱼ := √(1-ξⱼ^2) is positive
 # definition of δ = √(1-ξ.^2) will be used later for simplification
 δ = create_pos_vec("δ",n_osc)
-δ[1] = symbols("δ", positive = true)
-δ[2] = δ[1]
 
 # the total size of the DAE system will be 
 # the size of the oscillatory system in first order form (2*n_osc)
 # plus the number of algebraic equations needed for the quadratic recast
-# is n_osc = 2 and the nonlinearity is cubic, 
-# only two auxiliary variables are needed (R₁ = U₁^2 and R₂ = U₂^2)
+# is n_osc = 1 and the nonlinearity is cubic, 
+# only one auxiliary variable is needed (R₁ = U₁^2)
 n_aux = 2
-n_full = 2*n_osc + n_aux
+n_full = 2*n_osc+n_aux
 
 # define the LHS as a function LHS_Lin(Yₜ)
 # the matrix A such that LHS_Lin(Yₜ) = A.Yₜ
@@ -143,14 +131,13 @@ function RHS_Quad(Y)
     F = sympy.zeros(n_full,1)[:,1];
     U = Y[1:n_osc]                        # first n_osc positions is U
     R = Y[2*n_osc+1:2*n_osc+n_aux]      # last n_aux positions are the auxiliary variables
-    # define generic quadratic and cubic nonlinearities
-    g = symbols("g", real = true)
+    # define only cubic nonlinearity
     h = symbols("h", real = true)
     # assign to the second n_osc equations
-    F[n_osc+1] = - (2*g*U[2]*U[1] - h*U[1]*R[1])
-    F[n_osc+2] = - (g*U[1]^2)
+    F[n_osc+1] = - h*U[1]*R[1] + U[1]*R[2]
     # last n_aux equations are the algebraic ones defining the auxiliary variables
-    F[2*n_osc+1:2*n_osc+n_aux] = -U.^2
+    F[2*n_osc+1:2*n_osc+n_aux-1] = -U.^2
+    F[2*n_osc+n_aux] = 0
     return F
 end
 
@@ -161,11 +148,11 @@ C0 = sympy.zeros(n_full,1)[:,1]
 C⁺ₑₓₜ = sympy.zeros(n_full,1)[:,1]
 C⁻ₑₓₜ = sympy.zeros(n_full,1)[:,1]
 # to have a κ*cosin(Ωt) excitation on U₁
-C⁺ₑₓₜ[n_osc+2] = 1/Sym(2)*symbols("κ",positive=true)
-C⁻ₑₓₜ[n_osc+2] = 1/Sym(2)*symbols("κ",positive=true)
+C⁺ₑₓₜ[2*n_osc+n_aux] = -1/Sym(2)*symbols("κ",positive=true)
+C⁻ₑₓₜ[2*n_osc+n_aux] = -1/Sym(2)*symbols("κ",positive=true)
 # to have a κ*sin(Ωt) excitation on U₁
-# C⁺ₑₓₜ[n_osc+1] = + im/Sym(2)*symbols("κ",positive=true)
-# C⁻ₑₓₜ[n_osc+1] = -  im/Sym(2)*symbols("κ",positive=true)
+# C⁺ₑₓₜ[n_osc+1] = - im/Sym(2)*symbols("κ",positive=true)
+# C⁻ₑₓₜ[n_osc+1] = + im/Sym(2)*symbols("κ",positive=true)
 
 # the function extract_Lin extracts the A and B matrices
 # from the user defined functions LHS_Lin and RHS_Lin
@@ -176,6 +163,9 @@ sys = system_struct(extract_Lin(   LHS_Lin,    n_full),
                             extract_Lin(   RHS_Lin,    n_full),
                             extract_Quad(RHS_Quad,n_full),
                             C0,C⁺ₑₓₜ,C⁻ₑₓₜ)
+
+
+
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #                            Definition of parametrisation                                      #
@@ -195,7 +185,7 @@ n_nonaut = 2
 n_rom = n_aut + n_nonaut
 #
 # order of the expansion
-o = 4
+o = 3
 #
 # initialise aexp
 # this is a structure containing information about all the sets
@@ -238,10 +228,10 @@ DP = init_parametrisation_struct(n_full,n_rom,aexp.n_sets,n_aut,n_osc,o)
 # which means that if here two consecutive entries represent a pair, also later they must
 # the last n_nonaut entries of λ₀ represent ±imΩ
 #
-# let us assume that the rom is a forced oscillator in a 1:1 resonance with the forcing
-# then the conditions of resonances should be written as:
-# conditions = [λ₀[2] =>-λ₀[1],λ₀[4] =>-λ₀[3],λ₀[3] =>2*λ₀[1]]
-conditions = [λ₀[2] =>-λ₀[1], λ₀[4] =>-λ₀[3], λ₀[3] =>2*λ₀[1]]
+# let us assume that the rom is an unforced oscillator 
+# then the conditions of near resonances should be written as:
+# conditions = [λ₀[2] =>-λ₀[1]]
+conditions = [λ₀[2] =>-λ₀[1],λ₀[4] =>-λ₀[3],λ₀[3] =>2*λ₀[1]]
 
 σ₀ = transpose(aexp.mat)*λ₀
 
@@ -251,7 +241,7 @@ if style == "Graph"
     DP.res = DP.res.+1
 else
     for in = 1:n_aut
-        if style == "RNF"
+        if style == "RNF"            
             DP.res[in,:] = convert(Vector{Int},mysub(abs.(σ₀).-abs(λ₀[in]),conditions) .== 0)
         end
         if style == "CNF"
@@ -260,6 +250,10 @@ else
     end
 end
 
+if style == "ONF"    
+    DP.res=[0  1  1  0  0  0  1  1  1  1;
+            0  1  1  0  0  0  1  1  1  1]
+end
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #                            Computation of parametrisation                                  #
@@ -352,12 +346,18 @@ sys.B+= ∇Q0
 # Λ[n_aux+3:n_aux+4] are relative to ω₂
 # and so on
 # here the master are chosen as those relating to ω₁:
-yR = YR[:,[6,5]]
-yL = YL[:,[6,5]]
-yR[:,1] = yR[:,1]/(yR[1,1])
-yR[:,2] = yR[:,2]/(yR[1,2])
+yR = YR[:,n_aux+2:-1:n_aux+1] #OK
+yL = YL[:,n_aux+2:-1:n_aux+1] #OK
+#test normalisation - a revoir // tester //OK this is the good one !
+#yR[:,1]=-yR[:,1]/(1/ω[1])/im
+#yR[:,2]=yR[:,2]/(1/ω[1])/im
+# Ale normalisation
+yR[:,1]=yR[:,1]/(yR[1,1])
+yR[:,2]=yR[:,2]/(yR[1,2])
 
-λ = Λ[[6,5]]
+#λ = Λ[n_aux+1:n_aux+2]
+λ = Λ[n_aux+2:-1:n_aux+1] 
+
 # any choice is possible but the sorting is not known before launching the script!
 # one must then look at the eigenvalues sorting, then choose the masters
 # after having chosen the master, 
@@ -406,10 +406,6 @@ for ind_set1 = 1:n_aut
     DP.YLᵀA[ind_set1,:] = yLsᵀ*sys.A    #transpose(yL[:,ind_set1])*sys.A    
 end
 
-if n_nonaut == 0
-    DP.σ = transpose(λ)*aexp.mat
-end
-
 #~~~~~~~~~~~~~~~~~#
 #           Order 1                  #
 #~~~~~~~~~~~~~~~~~#
@@ -418,7 +414,7 @@ end
 if n_nonaut>0
     # augment λ with eigenvalues of the nonautonomous part:
     # λ = [λ;im*symbols("Ω",positive=true);-im*symbols("Ω",positive=true)]
-    λ = [λ;2*λ[1];2*λ[2]]
+    λ = [λ;im*ω[1]*2;-im*ω[1]*2]
     λ = reshape(λ,1,n_rom)
     # assign the eigenvalues of the nonautonomous part to f:
     DP.f[n_aut+1,aexp.get(aexp.get([p1 n_aut+1]))] = λ[n_aut+1]
@@ -464,26 +460,54 @@ for p=2:o
     end
 end
 
-Mathematica_output(DP, aexp, "./test/2DOF_quadratic_cubic_damped_parametric_CNF/", "Output_Mathematica",
-                   print_reduced_dynamics = true, print_nonlinear_mappings = true)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #          Substitutions           #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-# substitutions = [[Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc], [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]]
-# substitutions!(DP, substitutions)
-# reduced_dynamics_substitutions!(DP, substitutions)
-# reduced_dynamics_latex_output(DP, aexp, "./test/2DOF_oscillator_quadratic_cubic_damped_parametric_CNF_output.txt")
+# h_val = 1
+# omega_val = 1.5
+# xi_val = 0.02
+# h = symbols("h", real = true)
+# kappa_val = 0.1
+# substitutions = [[Dict(h => h_val) for i=1:n_osc], [Dict(ξ[i] => xi_val) for i=1:n_osc], [Dict(δ[i] => sqrt(1-xi_val^2)) for i=1:n_osc], [Dict(ω[i] => omega_val) for i=1:n_osc], [Dict(symbols("Ω",positive=true) => omega_val/3.0) for i=1:n_osc],[Dict(symbols("κ",positive=true) => kappa_val) for i=1:n_osc]]
+
+substitutions = [[Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc], [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]]
+# Mathematica_output(DP, aexp, "./test/Mathieu_cubic_damped_CNF/", "Output_Mathematica",
+#                     print_reduced_dynamics = true, print_nonlinear_mappings = true)
+substitutions!(DP, substitutions)
+reduced_dynamics_substitutions!(DP, substitutions)
+# reduced_dynamics_latex_output(DP, aexp, "./test/Mathieu_cubic_damped_CNF_output.txt")
+
+# nonlinear_mappings_substitutions!(DP, substitutions)
+# nonlinear_mappings_latex_output(DP, aexp, "./test/Mathieu_cubic_damped_CNF_output.txt")
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #             Printing             #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-# nonlinear_mappings_substitutions!(DP, substitutions)
-# nonlinear_mappings_latex_output(DP, aexp, "./test/2DOF_oscillator_quadratic_cubic_damped_parametric_CNF_output.txt")
+# 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #          Realification           #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-# omega, xi = backbone_CNF(DP, aexp)
-# amplitude = physical_amplitudes_CNF(DP, aexp)
-# backbone_output(omega, "./test/2DOF_oscillator_cubic_conservative_unforced_CNF_output.txt")
-# physical_amplitudes_output(amplitude, "./test/2DOF_oscillator_cubic_conservative_unforced_CNF_output.txt")
+# real, imaginary = polar_realification(DP, aexp)
+# polar_realifed_reduced_dynamics_output(real, imaginary, "./test/Duffing_cubic_damped_forced_CNF_output.txt")
+
+# amplitude = physical_amplitudes_CNF(DP, aexp, o)
+# physical_amplitudes_output(amplitude, "./test/Duffing_cubic_damped_forced_CNF_output.txt")
+
+cartesian_realification!(DP, aexp, n_aux)
+matcont(DP, aexp)
+# open("./test/Duffing_cubic_damped_forced_CNF_output_matlab.txt", "w") do file
+#     # write(file, "Primary resonance:\n")
+#     # write(file, "Reduced dynamics:\n")
+#     # for i = 1:2
+#     #     for j in eachindex(DP.fr[1,:]) 
+#     #         write(file, replace(replace(latexify(simplify(DP.fr[i,j]))[2:end-1], "I" => "1i"), "\\cdot" => "*")*"\n")
+#     #     end
+#     # end
+#     # write(file, "Nonlinear mappings:\n")
+#     # for i = 1:1
+#     #     for j in eachindex(DP.W[1,:])
+#     #         write(file, replace(replace(latexify(simplify(DP.W[i,j]))[2:end-1], "I" => "1i"), "\\cdot" => "*")*"\n")
+#     #     end
+#     # end
+# end 

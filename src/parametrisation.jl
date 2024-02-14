@@ -17,10 +17,11 @@ mutable struct parametrisation_struct
     n_rom::Int
     n_sets::Int
     n_aut::Int
+    n_osc::Int
     order::Int
 end
 
-function init_parametrisation_struct(n_full::Int64,n_rom::Int64,n_sets::Int64,n_aut::Int,order::Int64)
+function init_parametrisation_struct(n_full::Int64,n_rom::Int64,n_sets::Int64,n_aut::Int64,n_osc::Int64,order::Int64)
     mat_Nxns = sympy.zeros(n_full,n_sets); # RHS and W    
     mat_nrxns = sympy.zeros(n_rom,n_sets);# f
     vec_1xns = sympy.zeros(1,n_sets);          # σ
@@ -34,5 +35,5 @@ function init_parametrisation_struct(n_full::Int64,n_rom::Int64,n_sets::Int64,n_
         0*vec_1xns,0*mat_naxns,
         0*mat_Nxna,transpose(mat_Nxna),
         vec_subs,
-        n_full,n_rom,n_sets,n_aut,order)
+        n_full,n_rom,n_sets,n_aut,n_osc,order)
 end

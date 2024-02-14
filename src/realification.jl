@@ -172,7 +172,7 @@ end
 
 # end
 
-function backbone_CNF(DP::parametrisation_struct, aexp::multiexponent_struct)
+function backbone_CNF(DP::parametrisation_struct, aexp::multiexponent_struct, omega = nothing)
     get_re_im = sympy.core.expr.Expr.as_real_imag
     trigsimp = sympy.core.expr.Expr.trigsimp
 
@@ -194,7 +194,11 @@ function backbone_CNF(DP::parametrisation_struct, aexp::multiexponent_struct)
             println("Caution! There seems to be non-imaginary coefficients on the backbone calculation.")
         end
         omega_rho[order] += imag
-        xi_rho[order] -= real/omega_rho[1]
+        if omega === nothing
+            xi_rho[order] -= real/omega_rho[1]
+        else
+            xi_rho[order] -= real/omega
+        end
     end
 
     t2 = time_ns()
