@@ -3,8 +3,6 @@ using LinearAlgebra
 push!(LOAD_PATH,joinpath(pwd(),"src"))
 using MORFE_Symbolic
 
-include("./../src/output.jl")
-
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #                            Definition of original system                                       #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -185,7 +183,7 @@ n_nonaut = 0
 n_rom = n_aut + n_nonaut
 #
 # order of the expansion
-o = 9
+o = 3
 #
 # initialise aexp
 # this is a structure containing information about all the sets
@@ -211,8 +209,7 @@ aexp = init_multiexponent_struct(n_rom,o)
 # this is a structure that will contain the solution of each step
 # of the parametrisation method
 # here it is only initialised with zeros
-DP = init_parametrisation_struct(n_full,n_rom,aexp.n_sets,n_aut,o)
-DP = init_parametrisation_struct(n_full,n_rom,aexp.n_sets,n_aut,o)
+DP = init_parametrisation_struct(n_full,n_rom,aexp.n_sets,n_aut,n_osc,o)
 # DP.W is a (n_full×n_sets) matrix whose colums contain the mapping 
 # relating to each monomial 
 # Y = ∑  DP.W[:,I]*z^aexp[I,:]
@@ -437,7 +434,7 @@ if n_nonaut>0
         ind_setG1_nonaut = aexp.gDP,aexpet(aexp.get([p1 ind_set1_nonaut]))
         println("solving order "*string(p1)*" and set "*string(ind_setG1_nonaut)*" with exponents:")
         println(aexp.mat[:,ind_setG1_nonaut])
-        solve_homological!(ind_setG1_nonaut,DP,aexp,sys)
+        solve_homological!(ind_setG1_nonaut,DP,sys)
     end
 end
 
@@ -454,7 +451,7 @@ for p=2:o
         println("solving set "*string(ind_setGp)*" with exponents:")
         println(aexp.mat[:,ind_setGp])
         fill_RHS_lin!(aexp.mat[:,ind_setGp],DP,aexp,sys)
-        solve_homological!(ind_setGp,DP,aexp,sys)
+        solve_homological!(ind_setGp,DP,sys)
     end
 end
 
@@ -479,8 +476,8 @@ nonlinear_mappings_substitutions!(DP, substitutions)
 #          Realification           #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 # real, imaginary = polar_realification(DP, aexp)
-omega = backbone_CNF(DP, aexp, o)
-amplitude = physical_amplitudes_CNF(DP, aexp, o)
+omega, xi = backbone_CNF(DP, aexp)
+amplitude = physical_amplitudes_CNF(DP, aexp)
 backbone_output(omega, "./test/Duffing_cubic_conservative_unforced_CNF_output.txt")
 physical_amplitudes_output(amplitude, "./test/Duffing_cubic_conservative_unforced_CNF_output.txt")
 #polar_realifed_reduced_dynamics_output(amplitude, omega, "./test/Duffing_cubic_conservative_unforced_CNF_output.txt")

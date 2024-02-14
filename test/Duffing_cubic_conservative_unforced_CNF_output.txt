@@ -79,3 +79,11 @@ Physical amplitudes:
 \begin{equation}
 u_{max} =\rho + \frac{-5 \cdot h \cdot \rho^{3}}{32 \cdot \omega_{1}^{2}} + \frac{25 \cdot h^{2} \cdot \rho^{5}}{256 \cdot \omega_{1}^{4}} + \frac{-2781 \cdot h^{3} \cdot \rho^{7}}{32768 \cdot \omega_{1}^{6}} 
 \end{equation}
+Backbone:
+\begin{align}
+\omega &= \omega_{1} + \frac{3 h}{8 \omega_{1}} \rho_{1}^{2}
+\end{align}
+Physical amplitudes:
+\begin{equation}
+u_{max} = \rho + \frac{-5 h \rho^{3}}{32 \omega_{1}^{2}} 
+\end{equation}
