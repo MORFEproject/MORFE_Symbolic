@@ -4,9 +4,6 @@ push!(LOAD_PATH,joinpath(pwd(),"src"))
 using MORFE_Symbolic
 using Combinatorics
 
-include("./../src/output.jl")
-#include("./../src/MORFE_Symbolic.jl")
-#include("./../src/basic_functionalities.jl")
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#

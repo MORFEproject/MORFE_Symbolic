@@ -3,8 +3,6 @@ using LinearAlgebra
 push!(LOAD_PATH,joinpath(pwd(),"src"))
 using MORFE_Symbolic
 
-include("./../src/output.jl")
-
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #                            Definition of original system                                       #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#

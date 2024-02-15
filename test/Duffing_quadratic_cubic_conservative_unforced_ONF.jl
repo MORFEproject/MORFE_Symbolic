@@ -4,7 +4,6 @@ push!(LOAD_PATH,joinpath(pwd(),"src"))
 using MORFE_Symbolic
 using Combinatorics
 
-include("./../src/output.jl")
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #                            Definition of original system                                       #

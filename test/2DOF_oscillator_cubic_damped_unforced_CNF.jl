@@ -3,7 +3,6 @@ using LinearAlgebra
 push!(LOAD_PATH,joinpath(pwd(),"src"))
 using MORFE_Symbolic
 
-include("./../src/output.jl")
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #                            Definition of original system                                       #
@@ -140,20 +139,20 @@ function RHS_Quad(Y)
     R = Y[2*n_osc+1:2*n_osc+n_aux]      # last n_aux positions are the auxiliary variables
     # define generic quadratic and cubic nonlinearities
     # CHECK THIS PART!
-    G¹₁₁ = 0#symbols("G¹₁₁", real = true)
-    G²₁₁ = 0; G¹₁₂ = G²₁₁;#symbols("G²₁₁", real = true);  G¹₁₂ = G²₁₁;
-    G¹₂₂ = 0; G²₁₂ = G¹₂₂;#symbols("G¹₂₂", real = true);  G²₁₂ = G¹₂₂;
-    G²₂₂ = 0#symbols("G²₂₂", real = true)
-    H¹₁₁₁ = symbols("h¹₁₁₁", real = true)
-    H²₁₁₁ = symbols("h²₁₁₁", real = true); H¹₁₁₂ = 3*H²₁₁₁;
-    H¹₁₂₂ = symbols("h¹₁₂₂", real = true); H²₁₁₂ = H¹₁₂₂;
-    H¹₂₂₂ = symbols("h¹₂₂₂", real = true); H²₁₂₂ = 3*H¹₂₂₂;
-    H²₂₂₂ = symbols("h²₂₂₂", real = true)
+    g¹₁₁ = 0 #Sym("G¹₁₁")
+    g²₁₁ = 0;  g¹₁₂ = 2*g²₁₁; #Sym("G²₁₁")
+    g¹₂₂ = 0;  g²₁₂ = 2*g¹₂₂; #Sym("G¹₂₂")
+    g²₂₂ = 0 #Sym("G²₂₂")
+    h¹₁₁₁ = symbols("h¹₁₁₁", real = true)
+    h²₁₁₁ = symbols("h²₁₁₁", real = true); h¹₁₁₂ = 3*h²₁₁₁; #h¹₁₁₂ = symbols("h¹₁₁₂", real = true);
+    h¹₁₂₂ = symbols("h¹₁₂₂", real = true); h²₁₁₂ = h¹₁₂₂; #h²₁₁₂ = symbols("h²₁₁₂", real = true)
+    h¹₂₂₂ = symbols("h¹₂₂₂", real = true); h²₁₂₂ = 3*h¹₂₂₂; #h²₁₂₂ = symbols("h²₁₂₂", real = true)
+    h²₂₂₂ = symbols("h²₂₂₂", real = true)
     # assign to the second n_osc equations
-    F[n_osc+1] = - (G¹₁₁*U[1]^2 + G¹₁₂*U[2]*U[1] + G¹₂₂*U[2]^2) -
-                   (H¹₁₁₁*U[1]*R[1] + H¹₁₁₂*U[2]*R[1] + H¹₁₂₂*U[1]*R[2] + H¹₂₂₂*R[2]*U[2])
-    F[n_osc+2] = - (G²₁₁*U[1]^2   + G²₁₂*U[2]*U[1]   + G²₂₂*U[2]^2) -
-                   (H²₁₁₁*U[1]*R[1] + H²₁₁₂*U[2]*R[1] + H²₁₂₂*U[1]*R[2] + H²₂₂₂*R[2]*U[2])
+    F[n_osc+1] = - (g¹₁₁*U[1]^2 + g¹₁₂*U[1]*U[2] + g¹₂₂*U[2]^2) -
+                   (h¹₁₁₁*U[1]*R[1] + h¹₁₁₂*U[2]*R[1] + h¹₁₂₂*U[1]*R[2] + h¹₂₂₂*R[2]*U[2])
+    F[n_osc+2] = - (g²₁₁*U[1]^2 + g²₁₂*U[2]*U[1] + g²₂₂*U[2]^2) -
+                   (h²₁₁₁*U[1]*R[1] + h²₁₁₂*U[2]*R[1] + h²₁₂₂*U[1]*R[2] + h²₂₂₂*R[2]*U[2])
     # last n_aux equations are the algebraic ones defining the auxiliary variables
     F[2*n_osc+1:2*n_osc+n_aux] = -U.^2
     return F
@@ -473,7 +472,7 @@ for p=2:o
 end
 
 Mathematica_output(DP, aexp, "./test/2DOF_cubic_damped_unforced_CNF/", "Output_Mathematica",
-                   print_reduced_dynamics = true, print_nonlinear_mappings = false)
+                   print_reduced_dynamics = true, print_nonlinear_mappings = true)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #          Substitutions           #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
