@@ -183,7 +183,7 @@ n_nonaut = 2
 n_rom = n_aut + n_nonaut
 #
 # order of the expansion
-o = 5
+o = 3
 #
 # initialise aexp
 # this is a structure containing information about all the sets
@@ -209,7 +209,7 @@ aexp = init_multiexponent_struct(n_rom,o)
 # this is a structure that will contain the solution of each step
 # of the parametrisation method
 # here it is only initialised with zeros
-DP = init_parametrisation_struct(n_full,n_rom,aexp.n_sets,n_aut,o)
+DP = init_parametrisation_struct(n_full,n_rom,aexp.n_sets,n_aut,n_osc,o)
 # DP.W is a (n_full×n_sets) matrix whose colums contain the mapping 
 # relating to each monomial 
 # Y = ∑  DP.W[:,I]*z^aexp[I,:]
@@ -440,7 +440,7 @@ if n_nonaut>0
         ind_setG1_nonaut = aexp.get(aexp.get([p1 ind_set1_nonaut]))
         println("solving order "*string(p1)*" and set "*string(ind_setG1_nonaut)*" with exponents:")
         println(aexp.mat[:,ind_setG1_nonaut])
-        solve_homological!(ind_setG1_nonaut,DP,aexp,sys)
+        solve_homological!(ind_setG1_nonaut,DP,sys)
     end
 end
 
@@ -457,7 +457,7 @@ for p=2:o
         println("solving set "*string(ind_setGp)*" with exponents:")
         println(aexp.mat[:,ind_setGp])
         fill_RHS_lin!(aexp.mat[:,ind_setGp],DP,aexp,sys)
-        solve_homological!(ind_setGp,DP,aexp,sys)
+        solve_homological!(ind_setGp,DP,sys)
     end
 end
 
@@ -465,13 +465,14 @@ end
 #          Substitutions           #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 substitutions = [[Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc], [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]]
+substitutions!(DP, substitutions)
 reduced_dynamics_substitutions!(DP, substitutions)
 nonlinear_mappings_substitutions!(DP, substitutions)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #             Printing             #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-# reduced_dynamics_latex_output(DP, aexp, "./test/Duffing_cubic_conservative_forced_CNF_output.txt")
+reduced_dynamics_latex_output(DP, aexp, "./test/Duffing_cubic_conservative_forced_CNF_output.txt")
 nonlinear_mappings_latex_output(DP, aexp, "./test/Duffing_cubic_conservative_forced_CNF_output.txt")
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#

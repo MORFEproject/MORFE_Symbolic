@@ -434,7 +434,7 @@ if n_nonaut>0
         ind_setG1_nonaut = aexp.get(aexp.get([p1 ind_set1_nonaut]))
         println("solving order "*string(p1)*" and set "*string(ind_setG1_nonaut)*" with exponents:")
         println(aexp.mat[:,ind_setG1_nonaut])
-        solve_homological!(ind_setG1_nonaut,DP,aexp,sys)
+        solve_homological!(ind_setG1_nonaut,DP,sys)
     end
 end
 
@@ -451,7 +451,7 @@ for p=2:o
         println("solving set "*string(ind_setGp)*" with exponents:")
         println(aexp.mat[:,ind_setGp])
         fill_RHS_lin!(aexp.mat[:,ind_setGp],DP,aexp,sys)
-        solve_homological!(ind_setGp,DP,aexp,sys)
+        solve_homological!(ind_setGp,DP,sys)
     end
 end
 

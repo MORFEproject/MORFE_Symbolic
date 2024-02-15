@@ -439,7 +439,7 @@ if n_nonaut>0
         ind_setG1_nonaut = aexp.get(aexp.get([p1 ind_set1_nonaut]))
         println("solving order "*string(p1)*" and set "*string(ind_setG1_nonaut)*" with exponents:")
         println(aexp.mat[:,ind_setG1_nonaut])
-        solve_homological!(ind_setG1_nonaut,DP,aexp,sys)
+        solve_homological!(ind_setG1_nonaut,DP,sys)
     end
 end
 
@@ -456,23 +456,17 @@ for p=2:o
         println("solving set "*string(ind_setGp)*" with exponents:")
         println(aexp.mat[:,ind_setGp])
         fill_RHS_lin!(aexp.mat[:,ind_setGp],DP,aexp,sys)
-        solve_homological!(ind_setGp,DP,aexp,sys)
+        solve_homological!(ind_setGp,DP,sys)
     end
 end
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #          Substitutions           #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-# h_val = 1
-# omega_val = 1.5
-# xi_val = 0.02
-# h = symbols("h", real = true)
-# kappa_val = 0.1
-# substitutions = [[Dict(h => h_val) for i=1:n_osc], [Dict(ξ[i] => xi_val) for i=1:n_osc], [Dict(δ[i] => sqrt(1-xi_val^2)) for i=1:n_osc], [Dict(ω[i] => omega_val) for i=1:n_osc], [Dict(symbols("Ω",positive=true) => omega_val/3.0) for i=1:n_osc],[Dict(symbols("κ",positive=true) => kappa_val) for i=1:n_osc]]
-
-substitutions = [[Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc], [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]]
 # Mathematica_output(DP, aexp, "./test/Duffing_cubic_damped_forced_CNF/Subharmonic", "Output_Mathematica",
 #                     print_reduced_dynamics = true, print_nonlinear_mappings = true)
+
+substitutions = [[Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc], [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]]
 substitutions!(DP, substitutions)
 reduced_dynamics_substitutions!(DP, substitutions)
 reduced_dynamics_latex_output(DP, aexp, "./test/Mathieu_cubic_damped_CNF_output.txt")
