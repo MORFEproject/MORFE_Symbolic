@@ -4,7 +4,7 @@ Creates a generic symbolic vector where each entry is given by str indexed by an
 function create_gen_vec(str,n)
     z = sympy.zeros(n,1)[:,1]
     for i = 1:n
-        z[i] = symbols(str*string(i))
+        z[i] = symbols(str*"_"*string(i))
     end
     return z
 end
@@ -26,7 +26,7 @@ Creates a positive symbolic vector where each entry is given by str indexed by a
 function create_pos_vec(str,n)
     z = sympy.zeros(n,1)[:,1]
     for i = 1:n
-        z[i] = symbols(str*string(i),positive = true)
+        z[i] = symbols(str*"_"*string(i),positive = true)
     end
     return z
 end
