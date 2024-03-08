@@ -439,40 +439,6 @@ function Mathematica_output(DP::parametrisation_struct, aexp::multiexponent_stru
                 end
             end
         end
-        if print_cartesian_realified_reduced_dynamics
-            write(file, "fr = ConstantArray[0,{$(DP.n_rom),$(DP.n_sets)}];\n")
-            for i_var = 1:DP.n_rom
-                for i_set = 1:DP.n_sets
-                    write(file, "fr[[$(i_var),$(i_set)]] = FullSimplify[" * mathematica_code(DP.fr[i_var,i_set]) * "];\n")
-                end
-            end
-        end
-        if print_cartesian_realified_nonlinear_mappings
-            write(file, "Wr = ConstantArray[0,{$(DP.n_full),$(DP.n_sets)}];\n")
-            for i_var = 1:DP.n_full
-                for i_set = 1:DP.n_sets
-                    write(file, "Wr[[$(i_var),$(i_set)]] = FullSimplify[" * mathematica_code(DP.Wr[i_var,i_set]) * "];\n")
-                end
-            end
-        end
-        if print_backbone
-            write(file, "omegaRho = ConstantArray[0,$(DP.order)];\n")
-            for i = 1:DP.order
-                write(file, "omegaRho[[$(i)]] = FullSimplify[" * mathematica_code(omega_rho[i]) * "];\n")
-            end
-        end
-        if print_damping
-            write(file, "xiRho = ConstantArray[0,$(DP.order)];\n")
-            for i = 1:DP.order
-                write(file, "xiRho[[$(i)]] = FullSimplify[" * mathematica_code(xi_rho[i]) * "];\n")
-            end
-        end
-        if print_physical_amplitudes
-            write(file, "ampliRho = ConstantArray[0,$(DP.order)];\n")
-            for i = 1:DP.order
-                write(file, "ampliRho[[$(i)]] = FullSimplify[" * mathematica_code(ampli_rho[i]) * "];\n")
-            end
-        end
     end
 
     if print_reduced_dynamics
