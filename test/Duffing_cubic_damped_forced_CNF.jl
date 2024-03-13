@@ -61,8 +61,7 @@ M = diagm(sympy.ones(n_osc,1)[:,1])
 #
 # or simply define a diagonal matrix with entries ωⱼ^2:
 n_osc = size(M)[1]
-ω = symbols("ω", real = true, positive = true)
-K = diagm([ω^2])
+ω = symbols("ωd", real = true, positive = true)
 #
 # if nonconservative
 # 
@@ -73,8 +72,9 @@ K = diagm([ω^2])
 # or simply create a diagonalised damping matrix
 # generic diagonal damping:
 ξ = symbols("ξ", real = true, positive = true)
-ζ = 2*ξ*ω
-C = diagm([ζ])
+ζ = symbols("ζ", real = true, positive = true)
+C = diagm([Sym(2)*ζ])
+K = diagm([ω^2+ζ^2])
 # for the sake of readability, it is useful to specify that each oscillator is underdamped
 # which means that the quantity   δⱼ := √(1-ξⱼ^2) is positive
 # definition of δ = √(1-ξ.^2) will be used later for simplification
@@ -410,7 +410,7 @@ end
 if n_nonaut>0
     # augment λ with eigenvalues of the nonautonomous part:
     # λ = [λ;im*symbols("Ω",positive=true);-im*symbols("Ω",positive=true)]
-    λ = [λ;im*ω*δ;-im*ω*δ]
+    λ = [λ;im*ω;-im*ω]
     λ = reshape(λ,1,n_rom)
     # assign the eigenvalues of the nonautonomous part to f:
     DP.f[n_aut+1,aexp.get(aexp.get([p1 n_aut+1]))] = λ[n_aut+1]
