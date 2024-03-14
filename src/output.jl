@@ -250,28 +250,37 @@ function nonlinear_mappings_latex_output(DP::parametrisation_struct, aexp::multi
     println("Nonlinear mappings printed\n")
 end
 
-function polar_realifed_reduced_dynamics_output(real, imaginary, output_file = nothing; file_mode::String = "a")
-    println("Printing polar realified reduced dynamics")
+# function polar_realifed_reduced_dynamics_output(real, imaginary, output_file = nothing; file_mode::String = "a")
+#     println("Printing polar realified reduced dynamics")
     
-    latex_output = "\\begin{align}"
-    latex_output *= "\n\\dot{\\rho} &= " * latexify(real, cdot = false, safescripts = true)[2:end-1] * "\\\\"
-    latex_output *= "\n\\rho \\dot{\\theta} &= " * latexify(imaginary, cdot = false, safescripts = true)[2:end-1] * "\\\\"
-    latex_output = replace(latex_output, "z1" => "z_{1}")
-    latex_output = replace(latex_output, "z2" => "z_{2}")
-    latex_output = latex_output[1:end-2] * "\n\\end{align}\n"
+#     latex_output = "\\begin{align}"
+#     latex_output *= "\n\\dot{\\rho} &= " * latexify(real, cdot = false, safescripts = true)[2:end-1] * "\\\\"
+#     latex_output *= "\n\\rho \\dot{\\theta} &= " * latexify(imaginary, cdot = false, safescripts = true)[2:end-1] * "\\\\"
+#     latex_output = replace(latex_output, "z1" => "z_{1}")
+#     latex_output = replace(latex_output, "z2" => "z_{2}")
+#     latex_output = latex_output[1:end-2] * "\n\\end{align}\n"
     
-    if output_file === nothing
-        println("Polar realified reduced dynamics:")
-        println(latex_output)
-    else
-        open(output_file, file_mode) do file
-            write(file, "Polar realified reduced dynamics:\n")
-            write(file, latex_output)
-        end 
-    end
-    println("Polar realified reduced dynamics printed")
-end
+#     if output_file === nothing
+#         println("Polar realified reduced dynamics:")
+#         println(latex_output)
+#     else
+#         open(output_file, file_mode) do file
+#             write(file, "Polar realified reduced dynamics:\n")
+#             write(file, latex_output)
+#         end 
+#     end
+#     println("Polar realified reduced dynamics printed")
+# end
 
+"""
+Function to output the backbone obtained by polar realification. Only to be used when the problem
+is parametrised by a single master mode. Input arguments are:\\
+    - omega_rho: An array containing the monomials defining the backbone when it is seen as a polynomial in rho;\\
+    - output_file: A file to output the results. If it is not passed, results are displayed
+                    on the terminal.\\
+    - file_mode: The opening mode of the file. If "a", the output is appended at the end.
+                    If "w" overwrites existing files with the same name.
+"""
 function backbone_output(omega_rho, output_file = nothing; file_mode::String = "a")
     poly_from_expr = sympy.polys.polytools.poly_from_expr
 
@@ -290,6 +299,8 @@ function backbone_output(omega_rho, output_file = nothing; file_mode::String = "
     latex_output = latex_code_for_polynomial_expression(expr_coeffs, expr_monoms, latex_output, "ρ")
     latex_output *= "\\\\"
     latex_output = replace(latex_output, "I" => "\\mathit{i}")
+    latex_output = replace(latex_output, "z1" => "z_{1}")
+    latex_output = replace(latex_output, "z2" => "z_{2}")
     latex_output = latex_output[1:end-2] * "\n\\end{align}\n"
 
     if output_file === nothing
@@ -304,6 +315,15 @@ function backbone_output(omega_rho, output_file = nothing; file_mode::String = "
     println("Backbone printed\n")
 end
 
+"""
+Function to output the nonlinear damping ratio obtained by polar realification. Only to be used when the problem
+is parametrised by a single master mode. Input arguments are:\\
+    - xi_rho: An array containing the monomials defining the damping when it is seen as a polynomial in rho;\\
+    - output_file: A file to output the results. If it is not passed, results are displayed
+                    on the terminal.\\
+    - file_mode: The opening mode of the file. If "a", the output is appended at the end.
+                    If "w" overwrites existing files with the same name.
+"""
 function nonlinear_damping_output(xi_rho, output_file = nothing; file_mode::String = "a")
     poly_from_expr = sympy.polys.polytools.poly_from_expr
 
@@ -322,6 +342,8 @@ function nonlinear_damping_output(xi_rho, output_file = nothing; file_mode::Stri
     latex_output = latex_code_for_polynomial_expression(expr_coeffs, expr_monoms, latex_output, "ρ")
     latex_output *= "\\\\"
     latex_output = replace(latex_output, "I" => "\\mathit{i}")
+    latex_output = replace(latex_output, "z1" => "z_{1}")
+    latex_output = replace(latex_output, "z2" => "z_{2}")
     latex_output = latex_output[1:end-2] * "\n\\end{align}\n"
 
     if output_file === nothing
@@ -336,38 +358,15 @@ function nonlinear_damping_output(xi_rho, output_file = nothing; file_mode::Stri
     println("Nonlinear damping printed\n")
 end
 
-# function physical_amplitudes_output(ampli_rho, output_file = nothing; file_mode::String = "a")
-#     poly_from_expr = sympy.polys.polytools.poly_from_expr
-
-#     println("Printing physical amplitudes")
-#     ρ = symbols("ρ", real=true)
-#     latex_output = "\\begin{align}"
-
-#     sum = 0
-#     for i in eachindex(ampli_rho)
-#         sum += ampli_rho[i]
-#     end
-#     expr = poly_from_expr(sum, gens = ρ)
-#     expr_monoms = expr[1].monoms()
-#     expr_coeffs = expr[1].coeffs()
-#     latex_output *= "\nu_{max} &="
-#     latex_output = latex_code_for_polynomial_expression(expr_coeffs, expr_monoms, latex_output, "ρ")
-#     latex_output *= "\\\\"
-#     latex_output = replace(latex_output, "I" => "\\mathit{i}")
-#     latex_output = latex_output[1:end-2] * "\n\\end{align}\n"
-
-#     if output_file === nothing
-#         println("Physical amplitudes:")
-#         println(latex_output)
-#     else
-#         open(output_file, file_mode) do file
-#             write(file, "Physical amplitudes:\n")
-#             write(file, latex_output)
-#         end 
-#     end
-#     println("Physical amplitudes printed\n")
-# end
-
+"""
+Function to output the physical amplitude obtained by polar realification. Only to be used when the problem
+is parametrised by a single master mode. Input arguments are:\\
+    - ampli_rho: An array containing the monomials defining the amplitude when it is seen as a polynomial in rho;\\
+    - output_file: A file to output the results. If it is not passed, results are displayed
+                    on the terminal.\\
+    - file_mode: The opening mode of the file. If "a", the output is appended at the end.
+                    If "w" overwrites existing files with the same name.
+"""
 function physical_amplitudes_output(ampli_rho, output_file = nothing; file_mode::String = "a")
     println("Printing physical amplitudes")
     latex_output = "\\begin{equation}"
@@ -395,6 +394,18 @@ function physical_amplitudes_output(ampli_rho, output_file = nothing; file_mode:
     println("Physical amplitudes printed\n")
 end
 
+"""
+Function to write .nb files in order to make a link with Mathematica. Always prints a file with all of the
+relevant variables and may optionally also print separate files with the reduced dynamics and nonlinear 
+mappings. Input arguments are:\\
+    - DP: The parametrisation data structure.\\
+    - aexp: A multiexponent_struct defining the numbering of the monoms in the parametrisation.\\
+    - directory: The directory at which the files are going to be saved.\\
+    - file_basename: The base name for the files. It will be appended with either "_variables", 
+    "_reduced_dynamics" or "_nonlinear_mappings".\\
+    - print_reduced_dynamics: logic flag to determine if the reduced dynamics should be printed.\\
+    - print_nonlinear_mappings: logic flag to determine if the nonlinear mappings should be printed.
+"""
 function Mathematica_output(DP::parametrisation_struct, aexp::multiexponent_struct, directory, file_basename;
     print_reduced_dynamics = true, print_nonlinear_mappings = true)
     mathematica_code = sympy.printing.mathematica.mathematica_code

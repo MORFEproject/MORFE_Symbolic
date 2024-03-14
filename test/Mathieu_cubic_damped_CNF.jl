@@ -485,7 +485,7 @@ nonlinear_mappings_latex_output(DP, aexp, "./test/Mathieu_cubic_damped_CNF_outpu
 # amplitude = physical_amplitudes_CNF(DP, aexp, o)
 # physical_amplitudes_output(amplitude, "./test/Duffing_cubic_damped_forced_CNF_output.txt")
 
-# cartesian_realification!(DP, aexp, n_aux)
+# cartesian_realification!(DP, aexp)
 # matcont(DP, aexp)
 # open("./test/Duffing_cubic_damped_forced_CNF_output_matlab.txt", "w") do file
 #     # write(file, "Primary resonance:\n")

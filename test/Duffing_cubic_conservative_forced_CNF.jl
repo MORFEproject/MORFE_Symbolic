@@ -480,4 +480,4 @@ nonlinear_mappings_latex_output(DP, aexp, "./test/Duffing_cubic_conservative_for
 # amplitude = physical_amplitudes_CNF(DP, aexp, o)
 # physical_amplitudes_output(amplitude, "./test/Duffing_cubic_conservative_forced_CNF_output.txt")
 
-# cartesian_realification!(DP, aexp, n_aux)
+# cartesian_realification!(DP, aexp)

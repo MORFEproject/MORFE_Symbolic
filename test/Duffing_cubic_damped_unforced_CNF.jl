@@ -476,7 +476,7 @@ reduced_dynamics_latex_output(DP, aexp, "./test/Duffing_cubic_damped_unforced_CN
 #          Realification           #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 # real, imaginary = polar_realification(DP, aexp)
-# cartesian_realification!(DP, aexp, n_aux)
+# cartesian_realification!(DP, aexp)
 
 # omega, xi = backbone_CNF(DP, aexp)
 # amplitude = physical_amplitudes_CNF(DP, aexp)

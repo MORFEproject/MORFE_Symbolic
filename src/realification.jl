@@ -1,6 +1,13 @@
 using SymPy
 
-# At present limited to one master mode with one harmonic excitation 
+"""
+Function to perform polar realification of the reduced dynamics. Limited to systems parametrised
+by a single master mode and with forcing such that a single harmonic is present. Takes as input
+arguments:
+    - DP: The parametrisation data structure.\\ 
+    - aexp: A multiexponent_struct defining the numbering of the monoms in the parametrisation.\\
+COMPLETAR E TESTAR !!!!! 
+"""
 function polar_realification(DP::parametrisation_struct,aexp::multiexponent_struct)
     get_re_im = sympy.core.expr.Expr.as_real_imag
     trigsimp = sympy.core.expr.Expr.trigsimp
@@ -24,7 +31,6 @@ function polar_realification(DP::parametrisation_struct,aexp::multiexponent_stru
         real += simplify(trigsimp(term[1]))
         imaginary += simplify(trigsimp(term[2]))
     end
-    m = Wild("m"); n = Wild("n")
     real_parts = collect(expand(2*real),(sin(Ω-θ),cos(Ω-θ)), evaluate = false)
     imaginary_parts = collect(expand(2*imaginary),(sin(Ω-θ),cos(Ω-θ)), evaluate = false)
 
@@ -46,7 +52,15 @@ function polar_realification(DP::parametrisation_struct,aexp::multiexponent_stru
     return real, imaginary
 end
 
-function cartesian_realification!(DP::parametrisation_struct, aexp::multiexponent_struct, n_aux::Int64)
+"""
+Function to perform cartesian realification of the reduced dynamics. Takes as input
+arguments:
+    - DP: The parametrisation data structure.\\ 
+    - aexp: A multiexponent_struct defining the numbering of the monoms in the parametrisation.\\
+Does not have outputs, but rather alters the arrays DP.fr and DP.Wr for the reduced dynamics and parametrisation,
+respectively.
+"""
+function cartesian_realification!(DP::parametrisation_struct, aexp::multiexponent_struct)
     t1 = time_ns()
     println("Cartesian realification started")
 
@@ -83,6 +97,10 @@ function cartesian_realification!(DP::parametrisation_struct, aexp::multiexponen
     println("")
 end
 
+"""
+Auxiliary function to recursively realify the reduced dynamics. Not meant for exportation, but rather for use
+inside this module.
+"""
 function recursive_C2R!(Iv::Vector{Int64}, p::Int64, pos::Int64, posinit::Int64, Av::Vector{Int64},
     coeff::Sym, DP::parametrisation_struct, aexp::multiexponent_struct)
 
@@ -126,49 +144,18 @@ function recursive_C2R!(Iv::Vector{Int64}, p::Int64, pos::Int64, posinit::Int64,
 
 end
 
-# function recursive_C2R!(Iv::Vector{Int64}, p::Int64, pos::Int64, posinit::Int64, Av::Vector{Int64},
-#     coeff::ComplexF64, DP::parametrisation_struct, aexp::multiexponent_struct)
-
-#     nzhalf=Int(DP.n_aut/2)
-#     nzfhalf=Int((DP.n_rom-DP.n_aut)/2)                           
-#     if pos == (p+1)
-#         pos1 = aexp.get(Av)
-#         DP.Wr[:,pos1] += coeff*DP.W[:,posinit]
-#         DP.fr[:,pos1] += coeff*DP.f[:,posinit]
-#     else
-#         Av1 = Av[:]   # new vectors
-#         Av2 = Av[:]
-#         iz = Iv[pos]    # z var 
-
-#         if iz <= nzhalf
-#             coeff1 = -0.5*coeff  
-#             Av1[iz] += 1
-#             coeff2 = 0.5*im*coeff
-#             Av2[iz+nzhalf] += 1
-#         elseif iz <= DP.n_aut
-#             coeff1 = -0.5*coeff
-#             Av1[iz-nzhalf] += 1
-#             coeff2 = -0.5*im*coeff
-#             Av2[iz] += 1
-#         elseif iz <= DP.n_aut+nzfhalf  # to have cos and sin the 1/2 must avoided
-#             coeff1 = -coeff
-#             Av1[iz] += 1
-#             coeff2 = -im*coeff
-#             Av2[iz+nzfhalf] += 1
-#         else    
-#             coeff1 = coeff
-#             Av1[iz-nzfhalf] += 1
-#             coeff2 = -im*coeff
-#             Av2[iz] += 1
-#         end     
-
-#         pos += 1
-#         recursive_C2R!(Iv, p, pos, posinit, Av1, coeff1, DP, aexp)
-#         recursive_C2R!(Iv, p, pos, posinit, Av2, coeff2, DP, aexp)
-#     end
-
-# end
-
+"""
+Function to obtain the backbone and the nonlinear damping ratio by polar realification with CNF style. 
+Limited to systems parametrised by a single master mode and without forcing. Takes as input
+arguments:
+    - DP: The parametrisation data structure.\\ 
+    - aexp: A multiexponent_struct defining the numbering of the monoms in the parametrisation.\\
+    - omega: Reference value of the linear eigenfrequency to be used for the nonlinear damping
+    calculation. By default it is taken as the zero order monom of the backbone.\\
+Outputs are:\\
+    - omega_rho: An array containing the monomials defining the backbone when it is seen as a polynomial in rho;\\
+    - xi_rho: An array containing the monomials defining the damping when it is seen as a polynomial in rho.
+"""
 function backbone_CNF(DP::parametrisation_struct, aexp::multiexponent_struct, omega = nothing)
     get_re_im = sympy.core.expr.Expr.as_real_imag
     trigsimp = sympy.core.expr.Expr.trigsimp
@@ -206,7 +193,14 @@ function backbone_CNF(DP::parametrisation_struct, aexp::multiexponent_struct, om
     return omega_rho, xi_rho
 end
 
-# Function only for one master mode without damping
+"""
+Function to obtain the backbone and the nonlinear damping ratio by polar realification with CNF style. 
+Limited to systems parametrised by a single master mode and without forcing or damping. Takes as input
+arguments:\\
+    - DP: The parametrisation data structure.\\ 
+    - aexp: A multiexponent_struct defining the numbering of the monoms in the parametrisation.\\
+Output is an array containing the monomials defining the physical amplitude when it is seen as a polynomial in rho.
+"""
 function physical_amplitudes_CNF(DP::parametrisation_struct, aexp::multiexponent_struct)
     get_re_im = sympy.core.expr.Expr.as_real_imag
     trigsimp = sympy.core.expr.Expr.trigsimp
@@ -250,6 +244,13 @@ function physical_amplitudes_CNF(DP::parametrisation_struct, aexp::multiexponent
     end
 end
 
+"""
+Function to obtain the modal coordinates y_i from the physical coordinates u_i and v_i. Takes as
+input arguments:\\
+    - DP: The parametrisation data structure.\\ 
+    - aexp: A multiexponent_struct defining the numbering of the monoms in the parametrisation.\\
+Does not return anything, but rather loads vector DP.Wmodal with the results.
+"""
 function modal_coordinates_from_physical_coordinates!(DP::parametrisation_struct, eigenvecs, n_osc)
     red_eigenvecs = eigenvecs[1:2*n_osc,:]
     for i in 1:length(DP.W[1,:])

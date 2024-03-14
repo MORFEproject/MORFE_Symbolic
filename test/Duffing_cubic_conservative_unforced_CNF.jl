@@ -482,6 +482,6 @@ backbone_output(omega, "./test/Duffing_cubic_conservative_unforced_CNF_output.tx
 physical_amplitudes_output(amplitude, "./test/Duffing_cubic_conservative_unforced_CNF_output.txt")
 #polar_realifed_reduced_dynamics_output(amplitude, omega, "./test/Duffing_cubic_conservative_unforced_CNF_output.txt")
 
-# cartesian_realification!(DP, aexp, n_aux)
+# cartesian_realification!(DP, aexp)
 # reduced_dynamics_latex_output(DP, aexp, "./test/Duffing_cubic_conservative_unforced_CNF_output.txt", normal_coordinate = 'a', real = true)
 # nonlinear_mappings_latex_output(DP, aexp, "./test/Duffing_cubic_conservative_unforced_CNF_output.txt", normal_coordinate = 'a', real = true)

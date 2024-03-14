@@ -464,7 +464,7 @@ substitutions!(DP, substitutions)
 reduced_dynamics_substitutions!(DP, substitutions)
 nonlinear_mappings_substitutions!(DP, substitutions)
 
-cartesian_realification!(DP, aexp, n_aux)
+cartesian_realification!(DP, aexp)
 
 reduced_dynamics_latex_output(DP, aexp, "./test/Duffing_cubic_conservative_unforced_RNF_output.txt", real=true, normal_coordinate = 'a')
 nonlinear_mappings_latex_output(DP, aexp, "./test/Duffing_cubic_conservative_unforced_RNF_output.txt", real=true, normal_coordinate = 'a')
