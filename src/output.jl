@@ -118,7 +118,7 @@ Function to output the reduced dynamics on latex format. Input arguments are:\\
                     If "w" overwrites existing files with the same name.
 """
 function reduced_dynamics_latex_output(DP::parametrisation_struct, aexp::multiexponent_struct, output_file = nothing;
-                                       file_mode::String = "a", normal_coordinate = 'z', real = false)
+                                       file_mode::String = "a", normal_coordinate = 'z', result = "complex")
     poly_from_expr = sympy.polys.polytools.poly_from_expr
 
     println("Printing reduced dynamics")
@@ -127,10 +127,12 @@ function reduced_dynamics_latex_output(DP::parametrisation_struct, aexp::multiex
     z = [Sym("$(normal_coordinate)_$(i)") for i=1:DP.n_rom]
     for i_ord=1:length(DP.f[1,:])
         monom = prod(z .^ aexp.mat[:,i_ord])
-        if !real 
+        if result == "complex"
             zₜ += DP.f[:,i_ord]*monom
-        else
+        elseif result == "real"
             zₜ += DP.fr[:,i_ord]*monom
+        else 
+            throw(ArgumentError("Result type should be either complex or real!"))
         end 
     end
     
@@ -147,7 +149,7 @@ function reduced_dynamics_latex_output(DP::parametrisation_struct, aexp::multiex
     latex_output = latex_output[1:end-2] * "\n\\end{align}\n"
     
     if output_file === nothing
-        if !real
+        if result == "complex"
             println("Reduced dynamics:")
         else
             println("Realified reduced dynamics:")
@@ -155,7 +157,7 @@ function reduced_dynamics_latex_output(DP::parametrisation_struct, aexp::multiex
         println(latex_output)
     else
         open(output_file, file_mode) do file
-            if !real
+            if result == "complex"
                 write(file, "Reduced dynamics:\n")
             else
                 write(file, "Realified reduced dynamics:\n")
@@ -196,12 +198,6 @@ function nonlinear_mappings_latex_output(DP::parametrisation_struct, aexp::multi
         else 
             throw(ArgumentError("Result type should be either complex, real or modal!"))
         end 
-    end
-
-    if result == "modal"
-        printed_variable = "y"
-    else
-        printed_variable = "u"
     end
     
     latex_output = "\\begin{align}"
@@ -299,8 +295,6 @@ function backbone_output(omega_rho, output_file = nothing; file_mode::String = "
     latex_output = latex_code_for_polynomial_expression(expr_coeffs, expr_monoms, latex_output, "ρ")
     latex_output *= "\\\\"
     latex_output = replace(latex_output, "I" => "\\mathit{i}")
-    latex_output = replace(latex_output, "z1" => "z_{1}")
-    latex_output = replace(latex_output, "z2" => "z_{2}")
     latex_output = latex_output[1:end-2] * "\n\\end{align}\n"
 
     if output_file === nothing
@@ -342,8 +336,6 @@ function nonlinear_damping_output(xi_rho, output_file = nothing; file_mode::Stri
     latex_output = latex_code_for_polynomial_expression(expr_coeffs, expr_monoms, latex_output, "ρ")
     latex_output *= "\\\\"
     latex_output = replace(latex_output, "I" => "\\mathit{i}")
-    latex_output = replace(latex_output, "z1" => "z_{1}")
-    latex_output = replace(latex_output, "z2" => "z_{2}")
     latex_output = latex_output[1:end-2] * "\n\\end{align}\n"
 
     if output_file === nothing
@@ -368,19 +360,33 @@ is parametrised by a single master mode. Input arguments are:\\
                     If "w" overwrites existing files with the same name.
 """
 function physical_amplitudes_output(ampli_rho, output_file = nothing; file_mode::String = "a")
-    println("Printing physical amplitudes")
-    latex_output = "\\begin{equation}"
+    poly_from_expr = sympy.polys.polytools.poly_from_expr
 
-    latex_output *= "\nu_{max} = "
+    println("Printing physical amplitudes")
+    ρ = symbols("ρ", real=true)
+    latex_output = "\\begin{align}"
+
+    sum = 0
     for i in eachindex(ampli_rho)
-        if ampli_rho[i] != 0
-            latex_output *= latexify(ampli_rho[i], cdot = false, safescripts = true)[2:end-1] * " + "
-        end
+        sum += ampli_rho[i]
     end
+    expr = poly_from_expr(sum, gens = ρ)
+    expr_monoms = expr[1].monoms()
+    expr_coeffs = expr[1].coeffs()
+    latex_output *= "\nu_{max} &="
+    latex_output = latex_code_for_polynomial_expression(expr_coeffs, expr_monoms, latex_output, "ρ")
+    latex_output *= "\\\\"
     latex_output = replace(latex_output, "I" => "\\mathit{i}")
-    latex_output = replace(latex_output, "z1" => "z_{1}")
-    latex_output = replace(latex_output, "z2" => "z_{2}")
-    latex_output = latex_output[1:end-2] * "\n\\end{equation}\n"
+    latex_output = latex_output[1:end-2] * "\n\\end{align}\n"
+
+    # latex_output *= "\nu_{max} = "
+    # for i in eachindex(ampli_rho)
+    #     if ampli_rho[i] != 0
+    #         latex_output *= latexify(ampli_rho[i], cdot = false, safescripts = true)[2:end-1] * " + "
+    #     end
+    # end
+    # latex_output = replace(latex_output, "I" => "\\mathit{i}")
+    # latex_output = latex_output[1:end-2] * "\n\\end{equation}\n"
 
     if output_file === nothing
         println("Physical amplitudes:")
@@ -423,6 +429,7 @@ function Mathematica_output(DP::parametrisation_struct, aexp::multiexponent_stru
             for key in keys(DP.subs[i])
                 if key != 0
                     math_code = mathematica_code(key) * " = FullSimplify[" * mathematica_code(DP.subs[i][key]) * "];\n"
+                    math_code = replace(math_code, "_" => "")
                     write(file, math_code) 
                 end
             end
@@ -438,7 +445,9 @@ function Mathematica_output(DP::parametrisation_struct, aexp::multiexponent_stru
             write(file, "f = ConstantArray[0,{$(DP.n_rom),$(DP.n_sets)}];\n")
             for i_var = 1:DP.n_rom
                 for i_set = 1:DP.n_sets
-                    write(file, "f[[$(i_var),$(i_set)]] = FullSimplify[" * mathematica_code(DP.f[i_var,i_set]) * "];\n")
+                    math_code = "f[[$(i_var),$(i_set)]] = FullSimplify[" * mathematica_code(DP.f[i_var,i_set]) * "];\n"
+                    math_code = replace(math_code, "_" => "")
+                    write(file, math_code)
                 end
             end
         end
@@ -446,7 +455,9 @@ function Mathematica_output(DP::parametrisation_struct, aexp::multiexponent_stru
             write(file, "W = ConstantArray[0,{$(DP.n_full),$(DP.n_sets)}];\n")
             for i_var = 1:DP.n_full
                 for i_set = 1:DP.n_sets
-                    write(file, "W[[$(i_var),$(i_set)]] = FullSimplify[" * mathematica_code(DP.W[i_var,i_set]) * "];\n")
+                    math_code = "W[[$(i_var),$(i_set)]] = FullSimplify[" * mathematica_code(DP.W[i_var,i_set]) * "];\n"
+                    math_code = replace(math_code, "_" => "")
+                    write(file, math_code)
                 end
             end
         end

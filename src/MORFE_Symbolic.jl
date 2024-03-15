@@ -22,7 +22,7 @@ module MORFE_Symbolic
     export substitutions!, reduced_dynamics_substitutions!, nonlinear_mappings_substitutions!, Mathematica_output
     export polar_realification, cartesian_realification!, backbone_CNF, physical_amplitudes_CNF
     export modal_coordinates_from_physical_coordinates!
-    export reduced_dynamics_latex_output, nonlinear_mappings_latex_output, backbone_output, polar_realifed_reduced_dynamics_output
+    export reduced_dynamics_latex_output, nonlinear_mappings_latex_output, backbone_output, nonlinear_damping_output
     export physical_amplitudes_output, Mathematica_output
     export partitions_two
 
