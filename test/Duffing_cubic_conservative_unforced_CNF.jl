@@ -462,15 +462,14 @@ substitutions = [[Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc], [Dict(2*ξ[i
 substitutions!(DP, substitutions)
 reduced_dynamics_substitutions!(DP, substitutions)
 nonlinear_mappings_substitutions!(DP, substitutions)
-
-# modal_coordinates_from_physical_coordinates!(DP,yR,n_osc)
-# nonlinear_mappings_latex_output(DP, aexp, "./test/Duffing_cubic_conservative_unforced_CNF_output.txt", result = "modal")
+modal_coordinates_from_physical_coordinates!(DP,yR,n_osc)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #             Printing             #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 reduced_dynamics_latex_output(DP, aexp, "./test/Duffing_cubic_conservative_unforced_CNF_output.txt")
 nonlinear_mappings_latex_output(DP, aexp, "./test/Duffing_cubic_conservative_unforced_CNF_output.txt")
+nonlinear_mappings_latex_output(DP, aexp, "./test/Duffing_cubic_conservative_unforced_CNF_output.txt", result = "modal")
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #          Realification           #
@@ -479,9 +478,10 @@ nonlinear_mappings_latex_output(DP, aexp, "./test/Duffing_cubic_conservative_unf
 omega, xi = backbone_CNF(DP, aexp)
 amplitude = physical_amplitudes_CNF(DP, aexp)
 backbone_output(omega, "./test/Duffing_cubic_conservative_unforced_CNF_output.txt")
+nonlinear_damping_output(omega, "./test/Duffing_cubic_conservative_unforced_CNF_output.txt")
 physical_amplitudes_output(amplitude, "./test/Duffing_cubic_conservative_unforced_CNF_output.txt")
 #polar_realifed_reduced_dynamics_output(amplitude, omega, "./test/Duffing_cubic_conservative_unforced_CNF_output.txt")
 
-# cartesian_realification!(DP, aexp)
-# reduced_dynamics_latex_output(DP, aexp, "./test/Duffing_cubic_conservative_unforced_CNF_output.txt", normal_coordinate = 'a', real = true)
-# nonlinear_mappings_latex_output(DP, aexp, "./test/Duffing_cubic_conservative_unforced_CNF_output.txt", normal_coordinate = 'a', real = true)
+cartesian_realification!(DP, aexp)
+reduced_dynamics_latex_output(DP, aexp, "./test/Duffing_cubic_conservative_unforced_CNF_output.txt", normal_coordinate = 'a', result = "real")
+nonlinear_mappings_latex_output(DP, aexp, "./test/Duffing_cubic_conservative_unforced_CNF_output.txt", normal_coordinate = 'a', result = "real")
