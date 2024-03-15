@@ -73,7 +73,7 @@ function fill_RHS_dyn!(p::Int64,DP::parametrisation_struct,aexp::multiexponent_s
                         #if fs_set_R != 0    # only fill if the reduced dyn is nonzero
                             ind_RHS = aexp.get(set_L-e_s+set_R)
                             ind_W = aexp.get(set_L)
-                            DP.RHS_d[:,ind_RHS] += - sys.A*DP.Ws[:,ind_W]*fs_set_R*set_L[s]
+                            DP.RHS_d[:,ind_RHS] += - sys.B*DP.Ws[:,ind_W]*fs_set_R*set_L[s]
                         #end
                     end
                 end                
@@ -113,7 +113,7 @@ function fill_RHS_lin!(set_current::Vector{Int},DP::parametrisation_struct,aexp:
                     e_s = 0*set_current;e_s[s] = 1    # create unit vector e_s
                     set_dependent = set_current + e_s - e_r
                     ind_W = aexp.get(set_dependent)
-                    DP.RHS_d[:,ind_RHS] += - sys.A*DP.Ws[:,ind_W]*fs_r*set_dependent[s]
+                    DP.RHS_d[:,ind_RHS] += - sys.B*DP.Ws[:,ind_W]*fs_r*set_dependent[s]
                 end
             end                
         end

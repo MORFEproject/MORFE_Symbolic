@@ -1,6 +1,6 @@
 """
 Data structure defining the departing (full) system of equations:
-    A.Yₜ = B.Y + (Q.Y).Y + C0 + C⁺ₑₓₜ exp(+ im Ω t) + C⁻ₑₓₜ exp(-im Ω t)
+    B.Yₜ = A.Y + (Q.Y).Y + C0 + C⁺ₑₓₜ exp(+ im Ω t) + C⁻ₑₓₜ exp(-im Ω t)
 """
 mutable struct system_struct
     A::Matrix{Sym}

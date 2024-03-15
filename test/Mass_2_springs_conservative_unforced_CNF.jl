@@ -392,7 +392,7 @@ for ind_set1 = 1:n_aut
     DP.f[ind_set1,ind_setG1] = λ[ind_set1]
     DP.fs[ind_set1,ind_setG1] = Sym("λ"*string(ind_set1))
     DP.subs = [DP.subs;Dict(Sym("λ"*string(ind_set1))=>λ[ind_set1])]
-    # compute the matrix A*yR[aut]
+    # compute the matrix B*yR[aut]
     # which will be used for the top right border of the homological matrix
     yRs = 0*yR[:,ind_set1]
     for i_full=1:n_full
@@ -401,8 +401,8 @@ for ind_set1 = 1:n_aut
             DP.subs = [DP.subs;Dict(Sym("yR"*string(i_full)*"0"*string(ind_set1))=>yR[i_full,ind_set1])]
         end
     end
-    DP.AYR[:,ind_set1] = sys.A*yRs# yR[:,ind_set1]
-    # compute the matrix yL[aut]ᵀ*A
+    DP.BYR[:,ind_set1] = sys.B*yRs# yR[:,ind_set1]
+    # compute the matrix yL[aut]ᵀ*B
     # which will be used for the bottom left border of the homological matrix
     yLsᵀ = 0*transpose(yL[:,ind_set1])
     for i_full=1:n_full
@@ -411,7 +411,7 @@ for ind_set1 = 1:n_aut
             DP.subs = [DP.subs;Dict(Sym("yL"*string(i_full)*"0"*string(ind_set1))=>yL[i_full,ind_set1])]
         end
     end
-    DP.YLᵀA[ind_set1,:] = yLsᵀ*sys.A    #transpose(yL[:,ind_set1])*sys.A    
+    DP.YLᵀB[ind_set1,:] = yLsᵀ*sys.B    #transpose(yL[:,ind_set1])*sys.B   
 end
 
 if n_nonaut == 0

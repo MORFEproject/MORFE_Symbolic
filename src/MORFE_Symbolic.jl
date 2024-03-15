@@ -37,12 +37,12 @@ module MORFE_Symbolic
     If C0 = 0, the function compute_order_zero returns automatically Y0 = 0.
     """
     function compute_order_zero(sys::system_struct,sol::Int64)
-        N = size(sys.A)[1]
+        N = size(sys.B)[1]
         if sys.C0 == sympy.zeros(N,1)[:,1]
             x0 = sys.C0
         else
             x = create_gen_vec("x",N)
-            x0_sol = solve(Q_fun(x,x,sys.Q)+sys.B*x+sys.C0)
+            x0_sol = solve(Q_fun(x,x,sys.Q)+sys.A*x+sys.C0)
             println("Static Solutions:")
             println(x0_sol)
             x0 = sympy.zeros(N,1)[:,1];
@@ -60,22 +60,22 @@ module MORFE_Symbolic
     function generalised_eigenproblem(sys::system_struct)
         A = sys.A 
         B = sys.B     
-        N = size(A)[1] 
-        P,D = A.diagonalize() 
+        N = size(B)[1] 
+        P,D = B.diagonalize() 
         for i = 1:N
             if D[i,i] == 0
                 D[i,i] = 1/Sym("∞")
             end
         end
-        invA = P*D^-1*P^-1
-        invAB = invA*B
-        Y,Λ = invAB.diagonalize()   #     A*Y*Λ = B*Y
+        invB = P*D^-1*P^-1
+        invBA = invB*A
+        Y,Λ = invBA.diagonalize()   #     A*Y*Λ = B*Y
         println("Eigenproblem calculation right")
         λ = mysimp(diag(Λ))
         println(λ)
-        invAᵀ = transpose(P)^-1*D^-1*transpose(P)
-        invAᵀBᵀ = invAᵀ*transpose(B)
-        X,Λ = invAᵀBᵀ.diagonalize()   #     Aᵀ*X*Λ = Bᵀ*X =>  Λ*Xᵀ*A = Xᵀ*B
+        invBᵀ = transpose(P)^-1*D^-1*transpose(P)
+        invBᵀAᵀ = invBᵀ*transpose(A)
+        X,Λ = invBᵀAᵀ.diagonalize()   #     Aᵀ*X*Λ = Bᵀ*X =>  Λ*Xᵀ*A = Xᵀ*B
         println("Eigenproblem calculation left")
         λ = mysimp(diag(Λ))
         println(λ)    
@@ -97,8 +97,8 @@ module MORFE_Symbolic
         res_ind = DP.res[:,ind_set];
         σs =  Sym("σ"*string(ind_set))#DP.σ[ind_set]
         DP.subs = [DP.subs;Dict(σs=>DP.σ[ind_set])]
-        Mat = [   [σs*sys.A-sys.B         DP.AYR*diagm(res_ind)];
-                    [   diagm(res_ind)*DP.YLᵀA           diagm(res_ind.-Sym(1))]];
+        Mat = [   [σs*sys.B-sys.A         DP.BYR*diagm(res_ind)];
+                    [   diagm(res_ind)*DP.YLᵀB           diagm(res_ind.-Sym(1))]];
         Vec = [   0*(DP.RHS_d[:,ind_set]+DP.RHS_Q[:,ind_set]);
                     sympy.zeros(DP.n_aut,1)[:,1]];
         for i_full = 1:DP.n_full

@@ -16,8 +16,8 @@ mutable struct parametrisation_struct
     fr::Matrix{Sym}
     σ::Matrix{Sym}
     res::Matrix{Sym}
-    AYR::Matrix{Sym}
-    YLᵀA::Matrix{Sym}
+    BYR::Matrix{Sym}
+    YLᵀB::Matrix{Sym}
     subs::Vector{Dict{Sym, Sym}}
     n_full::Int
     n_rom::Int
