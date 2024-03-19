@@ -363,7 +363,7 @@ function physical_amplitudes_output(ampli_rho, output_file = nothing; file_mode:
     poly_from_expr = sympy.polys.polytools.poly_from_expr
 
     println("Printing physical amplitudes")
-    ρ = symbols("ρ", real=true)
+    ρ = symbols("ρ", positive=true)
     latex_output = "\\begin{align}"
 
     sum = 0

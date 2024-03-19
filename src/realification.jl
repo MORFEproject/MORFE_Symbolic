@@ -251,9 +251,13 @@ input arguments:\\
     - aexp: A multiexponent_struct defining the numbering of the monoms in the parametrisation.\\
 Does not return anything, but rather loads vector DP.Wmodal with the results.
 """
-function modal_coordinates_from_physical_coordinates!(DP::parametrisation_struct, eigenvecs, n_osc)
-    red_eigenvecs = eigenvecs[1:2*n_osc,:]
+function modal_coordinates_from_physical_coordinates!(DP::parametrisation_struct, aexp)
+    red_eigenvecs = sympy.zeros(2*DP.n_osc,DP.n_aut)
+    for ind_set1 = 1:DP.n_aut
+        ind_setG1 = aexp.get(aexp.get([1 ind_set1]))
+        red_eigenvecs[:,ind_set1] = DP.W[1:2*DP.n_osc,ind_setG1] #eigenvecs[1:2*n_osc,:]
+    end
     for i in 1:length(DP.W[1,:])
-        DP.Wmodal[1:2*n_osc,i] = red_eigenvecs \ DP.W[1:2*n_osc,i]
+        DP.Wmodal[1:2*DP.n_osc,i] = red_eigenvecs \ DP.W[1:2*DP.n_osc,i]
     end
 end

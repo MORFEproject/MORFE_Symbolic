@@ -26,7 +26,7 @@ The user can write the equations in the functions:
 LHS_Lin(Yₜ) = RHS_Lin(Y) + RHS_Quad(Y) + C0 + C⁺ₑₓₜ exp(+ im Ω t) + C⁻ₑₓₜ exp(-im Ω t)
 
 Upon extraction, the system will read:
-A.Yₜ = B.Y + (Q.Y).Y + C0 + C⁺ₑₓₜ exp(+ im Ω t) + C⁻ₑₓₜ exp(-im Ω t)
+B.Yₜ = A.Y + (Q.Y).Y + C0 + C⁺ₑₓₜ exp(+ im Ω t) + C⁻ₑₓₜ exp(-im Ω t)
 
 Q(Y)
 (Q.Y1).Y2

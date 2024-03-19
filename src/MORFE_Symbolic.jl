@@ -25,16 +25,21 @@ module MORFE_Symbolic
     export reduced_dynamics_latex_output, nonlinear_mappings_latex_output, backbone_output, nonlinear_damping_output
     export physical_amplitudes_output, Mathematica_output
     export partitions_two
+    export define_second_order_matrices, define_nonlinar_tensors, define_system
+    export define_parametrisation, compute_order_0_parametrisation!
+    export compute_order_1_parametrisation!, compute_order_p_parametrisation!
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     #             compute              #
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
     """
-    Function to calculate static solution. Finds Y0 such that B.Y0 + (Q.Y0).Y0 + C0 = 0
+    Function to calculate static solution. Finds Y0 such that A.Y0 + (Q.Y0).Y0 + C0 = 0
     ATTENTION: there might be multiple solutions to this problem.
     The second entry of the function selects which solution to extract.
     If C0 = 0, the function compute_order_zero returns automatically Y0 = 0.
+    If the function struggles and if the right solution to the equation is known by the user,
+    it can be directly input as: DP.W[:,ind_setG0] = [W0₁ ...]
     """
     function compute_order_zero(sys::system_struct,sol::Int64)
         N = size(sys.B)[1]
@@ -56,6 +61,14 @@ module MORFE_Symbolic
     """
     Calculates the eigenvalues λ and left and right eigenvalues X and Y
     for the generalized eigenvalue problem defined by (B - λA)Y = X*(B - λA) = 0.
+    λ,X,Y fulfil the conditions:
+    (1)    sys.B*Y[:,k]*λ[k] = sys.A*Y[:,k]
+    (2)    λ[k]*Xᵀ[:,k]*sys.B = Xᵀ[:,k]*sys.A
+    For the degrees of freedom of the full system relating to the algebraic part of the DAE,
+    the eigenvalues are set to the symbolic variable ∞. The conditions (1) and (2) might not
+    be respected for Λ[k] = ∞.
+    Normally the eigenvalues are organised as the first n_aux eigenvalues Λ[1:n_aux] are 
+    equal to ∞, then the meaningful eigenvalues starts usually sorted by lower ω to higher.
     """
     function generalised_eigenproblem(sys::system_struct)
         A = sys.A 
