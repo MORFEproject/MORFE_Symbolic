@@ -418,7 +418,7 @@ function Mathematica_output(DP::parametrisation_struct, aexp::multiexponent_stru
 
     println("Mathematica output started")
 
-    isdir(directory) || mkdir(directory)
+    isdir(directory) || mkpath(directory)
     path = joinpath(directory, file_basename * "_variables.nb")
     open(path, "w") do file
         write(file, "naut = $(DP.n_aut);\n")

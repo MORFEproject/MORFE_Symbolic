@@ -90,7 +90,7 @@ function compute_order_0_parametrisation!(DP, aexp, sys)
     sys.B += ∇Q0
 end
 
-function compute_order_1_parametrisation!(DP, aexp, sys, eigenvalues_order,nonautonomous_eigenvalues)
+function compute_order_1_parametrisation!(DP, aexp, sys, eigenvalues_order, nonautonomous_eigenvalues = nothing)
     Λ,YR,YL = generalised_eigenproblem(sys)
     
     # Master coordinates
@@ -149,8 +149,10 @@ function compute_order_1_parametrisation!(DP, aexp, sys, eigenvalues_order,nonau
         DP.σ = transpose(λ)*aexp.mat
     else
         # Augment λ with eigenvalues of the nonautonomous part:
-        λ = [λ;nonautonomous_eigenvalues]
-        λ = reshape(λ,1,n_rom)
+        if nonautonomous_eigenvalues !== nothing
+            λ = [λ;nonautonomous_eigenvalues]
+        end
+        λ = reshape(λ,1,DP.n_rom)
         # Assign the eigenvalues of the nonautonomous part to f:
         DP.f[DP.n_aut+1,aexp.get(aexp.get([p1 DP.n_aut+1]))] = λ[DP.n_aut+1]
         DP.fs[DP.n_aut+1,aexp.get(aexp.get([p1 DP.n_aut+1]))] = Sym("λ"*string(DP.n_aut+1))
@@ -159,8 +161,8 @@ function compute_order_1_parametrisation!(DP, aexp, sys, eigenvalues_order,nonau
         DP.fs[DP.n_aut+2,aexp.get(aexp.get([p1 DP.n_aut+2]))] = Sym("λ"*string(DP.n_aut+2))
         DP.subs = [DP.subs;Dict(Sym("λ"*string(DP.n_aut+2))=>λ[DP.n_aut+2])]
         # Assign the C⁺ₑₓₜ and C⁻ₑₓₜ to the RHS of the nonautonomous homological:
-        DP.RHS_d[1:n_full,aexp.get(aexp.get([p1 DP.n_aut+1]))] = C⁺ₑₓₜ
-        DP.RHS_d[1:n_full,aexp.get(aexp.get([p1 DP.n_aut+2]))] = C⁻ₑₓₜ
+        DP.RHS_d[1:DP.n_full,aexp.get(aexp.get([p1 DP.n_aut+1]))] = sys.C⁺ₑₓₜ
+        DP.RHS_d[1:DP.n_full,aexp.get(aexp.get([p1 DP.n_aut+2]))] = sys.C⁻ₑₓₜ
         # Calculate σ and assign it to DP:
         DP.σ = λ*aexp.mat
         # σ is equal to:

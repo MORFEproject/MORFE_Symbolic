@@ -116,23 +116,23 @@ module MORFE_Symbolic
                     sympy.zeros(DP.n_aut,1)[:,1]];
         for i_full = 1:DP.n_full
             if DP.RHS_d[i_full,ind_set]+DP.RHS_Q[i_full,ind_set] !=0
-                Vec[i_full] =  Sym("RHS"*string(i_full)*"0"*string(ind_set))
-                DP.subs = [DP.subs;Dict(Sym("RHS"*string(i_full)*"0"*string(ind_set))=>DP.RHS_d[i_full,ind_set]+DP.RHS_Q[i_full,ind_set])]
+                Vec[i_full] =  Sym("RHS"*string(i_full)*"X"*string(ind_set))
+                DP.subs = [DP.subs;Dict(Sym("RHS"*string(i_full)*"X"*string(ind_set))=>DP.RHS_d[i_full,ind_set]+DP.RHS_Q[i_full,ind_set])]
             end
         end
         Sol = Mat\Vec
         DP.W[:,ind_set] = Sol[1:DP.n_full]
         for i_full=1:DP.n_full
             if DP.W[i_full,ind_set] != 0
-                DP.Ws[i_full,ind_set] = Sym("W"*string(i_full)*"0"*string(ind_set))
-                DP.subs = [DP.subs;Dict(Sym("W"*string(i_full)*"0"*string(ind_set))=>DP.W[i_full,ind_set])]
+                DP.Ws[i_full,ind_set] = Sym("W"*string(i_full)*"X"*string(ind_set))
+                DP.subs = [DP.subs;Dict(Sym("W"*string(i_full)*"X"*string(ind_set))=>DP.W[i_full,ind_set])]
             end
         end
         DP.f[1:DP.n_aut,ind_set] = Sol[DP.n_full+1:DP.n_full+DP.n_aut]
         for i_aut=1:DP.n_aut
             if DP.f[i_aut,ind_set] != 0
-                DP.fs[i_aut,ind_set] = Sym("f"*string(i_aut)*"0"*string(ind_set))
-                DP.subs = [DP.subs;Dict(Sym("f"*string(i_aut)*"0"*string(ind_set))=>DP.f[i_aut,ind_set])]
+                DP.fs[i_aut,ind_set] = Sym("f"*string(i_aut)*"X"*string(ind_set))
+                DP.subs = [DP.subs;Dict(Sym("f"*string(i_aut)*"X"*string(ind_set))=>DP.f[i_aut,ind_set])]
             end
         end
     end

@@ -100,29 +100,29 @@ function define_second_order_matrices(n_osc; mass = "unitary", stiffness = "diag
     return M, K, C
 end
 
-function define_nonlinar_tensors(n_osc; quadratic = nothing, cubic = nothing)
-    if quadratic == "full"
-        G = create_real_3_tensor("g",n_osc)
-    elseif quadratic == "diagonal"
-        G = create_real_vec("g",n_osc)
-    elseif quadratic === nothing
-        G = nothing
-    else 
-        throw(ArgumentError("Quadratic nonlinear tensor should be either full, diagonal or nothing!"))
-    end
+# function define_nonlinar_tensors(n_osc; quadratic = nothing, cubic = nothing)
+#     if quadratic == "full"
+#         G = create_real_3_tensor("g",n_osc)
+#     elseif quadratic == "diagonal"
+#         G = create_real_vec("g",n_osc)
+#     elseif quadratic === nothing
+#         G = nothing
+#     else 
+#         throw(ArgumentError("Quadratic nonlinear tensor should be either full, diagonal or nothing!"))
+#     end
 
-    if cubic == "full"
-        H = create_real_4_tensor("h",n_osc)
-    elseif cubic == "diagonal"
-        H = create_real_vec("h",n_osc)
-    elseif cubic === nothing
-        H = nothing
-    else 
-        throw(ArgumentError("Cubic nonlinear tensor should be either full, diagonal or nothing!"))
-    end
+#     if cubic == "full"
+#         H = create_real_4_tensor("h",n_osc)
+#     elseif cubic == "diagonal"
+#         H = create_real_vec("h",n_osc)
+#     elseif cubic === nothing
+#         H = nothing
+#     else 
+#         throw(ArgumentError("Cubic nonlinear tensor should be either full, diagonal or nothing!"))
+#     end
 
-    return G, H
-end
+#     return G, H
+# end
 
 # function quadratic_stiffness(n,G,Y1,Y2,symmetry)
 #     if G === nothing
@@ -188,46 +188,38 @@ function define_system(n_aux, M, K, C, F_nonlin, C0, C⁺ₑₓₜ, C⁻ₑₓ�
     
     function LHS_Lin(Yₜ)
         F = sympy.zeros(n_full,1)[:,1];
-        Uₜ = Yₜ[1:n_osc]                    # first n_osc positions is U
-        Vₜ = Yₜ[n_osc+1:2*n_osc]      # second n_osc positions is V
-        # first n_osc equations is M*Uₜ = M*V
-        F[1:n_osc] = M*Uₜ
-        # second n_osc equations is M*Vₜ = -C*V -K*U ...
-        F[n_osc+1:2*n_osc] = M*Vₜ
-        # last n_aux equations are the algebraic ones defining the auxiliary variables
-        # so they do not have a LHS
+        Uₜ = Yₜ[1:n_osc]                                # First n_osc positions are the elements of U
+        Vₜ = Yₜ[n_osc+1:2*n_osc]                        # Following n_osc positions are the elements of V
+        F[1:n_osc] = M*Uₜ                               # First n_osc equations is the LHS of M*Uₜ = M*V
+        F[n_osc+1:2*n_osc] = M*Vₜ                       # Following n_osc equations is the LHS of M*Vₜ = -C*V -K*U 
+        # Last n_aux equations are for the quadratic recast so their LHS is zero
         return F
     end
 
     function RHS_Lin(Y)
         F = sympy.zeros(n_full,1)[:,1];
-        U = Y[1:n_osc]                                    # first n_osc positions is U
-        V = Y[n_osc+1:2*n_osc]                      # second n_osc positions is V
-        R = Y[2*n_osc+1:2*n_osc+n_aux]       # last n_aux positions are the auxiliary variables
-        # first n_osc equations is M*Uₜ = M*V
-        F[1:n_osc] = M*V
-        # second n_osc equations is M*Vₜ = -C*V -K*U ...
-        F[n_osc+1:2*n_osc] = -C*V-K*U
-        # last n_aux equations are the algebraic ones defining the auxiliary variables
-        F[2*n_osc+1:2*n_osc+n_aux] = R
+        U = Y[1:n_osc]                                  # First n_osc positions are the elements of U
+        V = Y[n_osc+1:2*n_osc]                          # Following n_osc positions are the elements of V
+        R = Y[2*n_osc+1:2*n_osc+n_aux]                  # Last n_aux positions are the auxiliary variables
+        F[1:n_osc] = M*V                                # First n_osc equations is the RHS of M*Uₜ = M*V
+        F[n_osc+1:2*n_osc] = -C*V-K*U                   # Following n_osc equations is the RHS of M*Vₜ = -C*V -K*U 
+        F[2*n_osc+1:2*n_osc+n_aux] = R                  # Last n_aux equations are for the quadratic recast
         return F
     end
 
     function RHS_Quad(Y)
         F = sympy.zeros(n_full,1)[:,1];
-        U = Y[1:n_osc]                      # first n_osc positions is U
-        R = Y[2*n_osc+1:2*n_osc+n_aux]      # last n_aux positions are the auxiliary variables
-        # assign to the second n_osc equations
-        F[n_osc+1:n_osc+n_aux] = F_nonlin(U,R,n_aux)
-        # last n_aux equations are the algebraic ones defining the auxiliary variables
-        F[2*n_osc+1:2*n_osc+n_aux] = -U.^2
+        U = Y[1:n_osc]                                  # First n_osc positions are the elements of U
+        R = Y[2*n_osc+1:2*n_osc+n_aux]                  # Last n_aux positions are the auxiliary variables
+        F[n_osc+1:n_osc+n_aux] = F_nonlin(U,R,n_aux)    # Nonlinear internal forces in quadratic form
+        F[2*n_osc+1:2*n_osc+n_aux] = -U.^2              # Last n_aux equations are for the quadratic recast
         return F
     end
 
-    sys = system_struct(extract_Lin(   RHS_Lin,    n_full),
-                            extract_Lin(   LHS_Lin,    n_full),
-                            extract_Quad(RHS_Quad,n_full),
-                            C0,C⁺ₑₓₜ,C⁻ₑₓₜ)
+    sys = system_struct(extract_Lin(RHS_Lin, n_full),
+                        extract_Lin(LHS_Lin, n_full),
+                        extract_Quad(RHS_Quad, n_full),
+                        C0, C⁺ₑₓₜ, C⁻ₑₓₜ)
 
     return sys
 end
