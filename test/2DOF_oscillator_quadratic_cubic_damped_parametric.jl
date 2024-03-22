@@ -23,7 +23,7 @@ function F_nonlin(U,R,n_aux)
     g = symbols("g", real = true)
     h = symbols("h", real = true)
     
-    F[1] = - (2*g*U[1]*U[2] - h*U[1]*R[1])
+    F[1] = - (2*g*U[1]*U[2] + h*U[1]*R[1])
     F[2] = - (g*U[1]*U[1])
     return F
 end
