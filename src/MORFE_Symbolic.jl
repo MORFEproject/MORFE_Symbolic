@@ -25,7 +25,7 @@ module MORFE_Symbolic
     export reduced_dynamics_latex_output, nonlinear_mappings_latex_output, backbone_output, nonlinear_damping_output
     export physical_amplitudes_output, Mathematica_output
     export partitions_two
-    export define_second_order_matrices, define_nonlinar_tensors, define_system
+    export define_second_order_matrices, define_system
     export define_parametrisation, compute_order_0_parametrisation!
     export compute_order_1_parametrisation!, compute_order_p_parametrisation!
 

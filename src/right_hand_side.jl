@@ -1,7 +1,3 @@
-# include("multiexponent.jl")
-# include("parametrisation.jl")
-# include("system_of_equations.jl")
-
 function fill_RHS_quad!(p::Int64,DP::parametrisation_struct,aexp::multiexponent_struct,sys::system_struct)
     part = partitions_two(p)
     # partitions gives a list of all the 2 integers whose sum is p

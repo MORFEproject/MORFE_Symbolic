@@ -46,6 +46,20 @@ function init_parametrisation_struct(n_full::Int64,n_rom::Int64,n_sets::Int64,n_
         n_full,n_rom,n_sets,n_aut,n_osc,order)
 end
 
+"""
+Function to define the parametrisation and multiexponent data structures. Takes as input arguments:\\
+    - λ₀: Array with symbolic variables representing the eigenvalues of the system.\\
+    - n_rom: Number of variables in the reduced order model;\\
+    - n_full: Number of variables in the full system;\\
+    - n_aut: Number of variables in the autonomous part of the equations;\\
+    - n_osc: Number of variables in the second order form of the system;\\
+    - o: Order of the parametrisation;\\
+    - style: String defining the style of parametrisation;\\
+    - resonace_conditions: Array of dictionary pairs defining relationships between frequencies through
+    λ₀. For example [λ₀[2] =>-λ₀[1]] indicates that the frequency of the first two eigenvalues are the
+    negative of one another.\\
+Returns the parametrisation structure DP and the multiexponent structure aexp.
+"""
 function define_parametrisation(λ₀,n_rom,n_full,n_aut,n_osc,o,style,resonance_conditions)
     aexp = init_multiexponent_struct(n_rom,o)
     DP = init_parametrisation_struct(n_full,n_rom,aexp.n_sets,n_aut,n_osc,o)
@@ -67,6 +81,13 @@ function define_parametrisation(λ₀,n_rom,n_full,n_aut,n_osc,o,style,resonance
     return DP, aexp
 end
 
+"""
+Computes the order zero of the parametrisation. Takes as input arguments:\\
+    - DP: The parametrisation structure;\\
+    - aexp: The multiexponent structure;\\
+    - sys: The system of equations structure;\\
+Does not return anything, but changes DP.
+"""
 function compute_order_0_parametrisation!(DP, aexp, sys)
     p0 = 0;                                       # Order of the parametrisation
     n0 = 1;                                       # Number of sets in order 0
@@ -90,6 +111,17 @@ function compute_order_0_parametrisation!(DP, aexp, sys)
     sys.B += ∇Q0
 end
 
+"""
+Computes the order one of the parametrisation. Takes as input arguments:\\
+    - DP: The parametrisation structure;\\
+    - aexp: The multiexponent structure;\\
+    - sys: The system of equations structure;\\
+    - eigenvalues_order: Variable defining the order of the eigenvalues. Needs to be of a type
+    such that indexation of an array with it is possible (can be an integer, Vector, StepRange, etc);\\
+    - nonautonomous_eigenvalues: Column vector with the expressions for the eigenvalues of the
+    nonautonomous part.\\
+Does not return anything, but changes DP.
+"""
 function compute_order_1_parametrisation!(DP, aexp, sys, eigenvalues_order, nonautonomous_eigenvalues = nothing)
     Λ,YR,YL = generalised_eigenproblem(sys)
     
@@ -181,6 +213,14 @@ function compute_order_1_parametrisation!(DP, aexp, sys, eigenvalues_order, nona
     end
 end
 
+"""
+Computes the order p of the parametrisation. Takes as input arguments:\\
+    - DP: The parametrisation structure;\\
+    - aexp: The multiexponent structure;\\
+    - sys: The system of equations structure;\\
+    - p: The current order.\\
+Does not return anything, but changes DP.
+"""
 function compute_order_p_parametrisation!(DP, aexp, sys, p)
     println("solving order "*string(p))
     fill_RHS_dyn!(p,DP,aexp,sys)

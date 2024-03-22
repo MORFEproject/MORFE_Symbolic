@@ -38,7 +38,7 @@ function create_real_matrix(str,n)
     T = sympy.zeros(n,n)
     for i = 1:n
         for j = 1:n
-            T[i,j] = symbols(str*"_{"*string(i)*string(j)*"}",real = true)
+            T[i,j] = symbols(str*"_"*string(i)*string(j),real = true)
         end
     end
     return T
@@ -51,43 +51,7 @@ function create_pos_matrix(str,n)
     T = sympy.zeros(n,n)
     for i = 1:n
         for j = 1:n
-            T[i,j] = symbols(str*"_{"*string(i)*string(j)*"}",positive = true)
-        end
-    end
-    return T
-end
-
-"""
-Creates a real order 3 tensor where each entry is given by str indexed by an integer, up to size n.
-"""
-function create_real_3_tensor(str,n)
-    Array = sympy.tensor.array.MutableDenseNDimArray
-    zero_vec = sympy.zeros(n^3,1)[:,1]
-    T = Array(zero_vec,(n,n,n))
-    for i = 1:n
-        for j = 1:n
-            for k = 1:n
-                T[i,j,k] = symbols(str*"^"*string(i)*"_{"*string(j)*string(k)*"}",real = true)
-            end
-        end
-    end
-    return T
-end
-
-"""
-Creates a real order 4 tensor where each entry is given by str indexed by an integer, up to size n.
-"""
-function create_real_4_tensor(str,n)
-    Array = sympy.tensor.array.MutableDenseNDimArray
-    zero_vec = sympy.zeros(n^4,1)[:,1]
-    T = Array(zero_vec,(n,n,n,n))
-    for i = 1:n
-        for j = 1:n
-            for k = 1:n
-                for l = 1:n
-                    T[i,j,k,l] = symbols(str*"^"*string(i)*"_{"*string(j)*string(k)*string(l)*"}",real = true)
-                end
-            end
+            T[i,j] = symbols(str*"_"*string(i)*string(j),positive = true)
         end
     end
     return T

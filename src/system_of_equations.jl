@@ -60,6 +60,18 @@ function Q_fun(Y1::Vector{Sym},Y2::Vector{Sym},Q::Vector{Vector{Sym}})
     return F
 end
 
+"""
+Creates mass, stiffness and damping matrices relative to the second order problem.
+Input parameters are:\\
+    - n_osc: The size of the second order system (number of oscillator equations);\\
+    - mass: A string defining the type of the mass matrix. Can be either unitary, diagonal or full;\\
+    - stiffness: A string defining the type of the stiffness matrix. Can be either diagonal or full;\\
+    - damping: A variable defining the type of the damping matrix. Can be either nothing (undamped system), diagonal or full.\\
+An unitary mass matrix means that it is diagonal and with masses equal to one. When this option is chosen,
+if the stiffness and damping matrices are diagonal, they are going to be consitituted by the frequencies ω^2 and by 2*ξ*ω,
+respectively, with ξ the damping ratio.\\
+Returns the matrices M, K and C.
+"""
 function define_second_order_matrices(n_osc; mass = "unitary", stiffness = "diagonal", damping = nothing)
     if mass == "unitary"
         M = diagm(sympy.ones(n_osc,1)[:,1])
@@ -100,88 +112,20 @@ function define_second_order_matrices(n_osc; mass = "unitary", stiffness = "diag
     return M, K, C
 end
 
-# function define_nonlinar_tensors(n_osc; quadratic = nothing, cubic = nothing)
-#     if quadratic == "full"
-#         G = create_real_3_tensor("g",n_osc)
-#     elseif quadratic == "diagonal"
-#         G = create_real_vec("g",n_osc)
-#     elseif quadratic === nothing
-#         G = nothing
-#     else 
-#         throw(ArgumentError("Quadratic nonlinear tensor should be either full, diagonal or nothing!"))
-#     end
-
-#     if cubic == "full"
-#         H = create_real_4_tensor("h",n_osc)
-#     elseif cubic == "diagonal"
-#         H = create_real_vec("h",n_osc)
-#     elseif cubic === nothing
-#         H = nothing
-#     else 
-#         throw(ArgumentError("Cubic nonlinear tensor should be either full, diagonal or nothing!"))
-#     end
-
-#     return G, H
-# end
-
-# function quadratic_stiffness(n,G,Y1,Y2,symmetry)
-#     if G === nothing
-#         return sympy.zeros(n,1)[:,1]
-#     end
-#     if typeof(G) == Vector{Sym}
-#         return G.*Y1.*Y2
-#     end
-
-#     res = sympy.zeros(n,1)[:,1]
-#     visited = Set()
-#     for i = 1:n
-#         for j = 1:n
-#             for k = 1:n
-#                 if symmetry && !([i,j,k] in visited)
-#                     val = G[i,j,k]
-#                     for index in permutations([i,j,k])
-#                         push!(visited, index)
-#                         G[index[1],index[2],index[3]] = val
-#                     end
-#                 end
-#                 res[i] += G[i,j,k]*Y1[j]*Y2[k]
-#             end
-#         end
-#     end
-
-#     return res 
-# end
-
-# function cubic_stiffness(n,H,Y1,Y2,Y3,symmetry)
-#     if H === nothing
-#         return sympy.zeros(n,1)[:,1]
-#     end
-#     if typeof(H) == Vector{Sym}
-#         return H.*Y1.*Y2.*Y3
-#     end
-
-#     res = sympy.zeros(n,1)[:,1]
-#     visited = Set()
-#     for i = 1:n
-#         for j = 1:n
-#             for k = 1:n
-#                 for l = 1:n
-#                     if symmetry && !([i,j,k,l] in visited)
-#                         val = G[i,j,k,l]
-#                         for index in permutations([i,j,k,l])
-#                             push!(visited, index)
-#                             H[index[1],index[2],index[3],index[4]] = val
-#                         end
-#                     end
-#                     res[i] += H[i,j,k]*Y1[j]*Y2[k]*Y3[l]
-#                 end
-#             end
-#         end
-#     end
-
-#     return res 
-# end
-
+"""
+Defines the system of equations structure. Input arguments are:\\
+    - n_aux: The number of auxiliary variables for the quadratic recast;\\
+    - M: The mass matrix;\\
+    - K: The stiffness matrix;\\
+    - C: The damping matrix;\\
+    - F_nonlin: A function defining the nonlinear internal forces. Receives as input arguments the
+    displacements U, the quadratic recast variables R and n_aux. Returns an array of length n_osc.\\
+    - C0: An array defining the static forces;\\
+    - C⁺ₑₓₜ and C⁻ₑₓₜ: Arrays defining the amplitudes of a single harmonic excitation of frequency Ω.
+    The excitation is defined using complex variables, such that the + vector is associated with
+    exp(iΩt) and the - one with exp(-iΩt).\\
+    Returns the system of equations structure.
+"""
 function define_system(n_aux, M, K, C, F_nonlin, C0, C⁺ₑₓₜ, C⁻ₑₓₜ)
     n_osc = size(M)[1]
     n_full = 2*n_osc + n_aux
@@ -211,7 +155,7 @@ function define_system(n_aux, M, K, C, F_nonlin, C0, C⁺ₑₓₜ, C⁻ₑₓ�
         F = sympy.zeros(n_full,1)[:,1];
         U = Y[1:n_osc]                                  # First n_osc positions are the elements of U
         R = Y[2*n_osc+1:2*n_osc+n_aux]                  # Last n_aux positions are the auxiliary variables
-        F[n_osc+1:n_osc+n_aux] = F_nonlin(U,R,n_aux)    # Nonlinear internal forces in quadratic form
+        F[n_osc+1:2*n_osc] = F_nonlin(U,R,n_aux)        # Nonlinear internal forces in quadratic form
         F[2*n_osc+1:2*n_osc+n_aux] = -U.^2              # Last n_aux equations are for the quadratic recast
         return F
     end

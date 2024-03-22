@@ -11,7 +11,6 @@ COMPLETAR E TESTAR !!!!!
 function polar_realification(DP::parametrisation_struct,aexp::multiexponent_struct)
     get_re_im = sympy.core.expr.Expr.as_real_imag
     trigsimp = sympy.core.expr.Expr.trigsimp
-    Wild = sympy.core.symbol.Wild
     collect = sympy.core.expr.Expr.collect
 
     t1 = time_ns()
@@ -111,9 +110,9 @@ function recursive_C2R!(Iv::Vector{Int64}, p::Int64, pos::Int64, posinit::Int64,
         DP.Wr[:,pos1] += coeff*DP.W[:,posinit]
         DP.fr[:,pos1] += coeff*DP.f[:,posinit]
     else
-        Av1 = Av[:]   # new vectors
+        Av1 = Av[:]   
         Av2 = Av[:]
-        iz = Iv[pos]    # z var 
+        iz = Iv[pos]    
 
         if iz <= nzhalf
             coeff1 = coeff/2  
@@ -125,7 +124,7 @@ function recursive_C2R!(Iv::Vector{Int64}, p::Int64, pos::Int64, posinit::Int64,
             Av1[iz-nzhalf] += 1
             coeff2 = -im*coeff/2
             Av2[iz] += 1
-        elseif iz <= DP.n_aut+nzfhalf  # to have cos and sin the 1/2 must avoided
+        elseif iz <= DP.n_aut+nzfhalf
             coeff1 = coeff
             Av1[iz] += 1
             coeff2 = im*coeff
@@ -194,7 +193,7 @@ function backbone_CNF(DP::parametrisation_struct, aexp::multiexponent_struct, om
 end
 
 """
-Function to obtain the backbone and the nonlinear damping ratio by polar realification with CNF style. 
+Function to obtain the physical displacement amplitude by polar realification with CNF style. 
 Limited to systems parametrised by a single master mode and without forcing or damping. Takes as input
 arguments:\\
     - DP: The parametrisation data structure.\\ 
@@ -203,7 +202,6 @@ Output is an array containing the monomials defining the physical amplitude when
 """
 function physical_amplitudes_CNF(DP::parametrisation_struct, aexp::multiexponent_struct)
     get_re_im = sympy.core.expr.Expr.as_real_imag
-    trigsimp = sympy.core.expr.Expr.trigsimp
 
     t1 = time_ns()
     println("Physical amplitudes calculation started")
