@@ -3,7 +3,7 @@ using LinearAlgebra
 push!(LOAD_PATH,joinpath(pwd(),"src"))
 using MORFE_Symbolic
 
-output_path = "./test/2DOF_oscillator_quadratic_cubic_conservative_unforced"
+output_path = "./test/Mass_2_springs_conservative_unforced"
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #                                System of equations definition                                  #
@@ -14,20 +14,22 @@ n_aux = 2                   # Number of auxiliary variables for quadratic recast
 n_full = 2*n_osc + n_aux    # Number of variables on the full recast system
 
 M, K, C = define_second_order_matrices(n_osc, mass = "unitary", stiffness = "diagonal", damping = nothing)
+C[2,2] = C[1,1]
 
 function F_nonlin(U,R,n_aux)
     F = sympy.zeros(n_osc,1)[:,1]
 
-    # Symmetry conditions
-    g¹₁₁ = symbols("g¹₁₁", real = true)
-    g²₁₁ = symbols("g²₁₁", real = true);  g¹₁₂ = 2*g²₁₁
-    g¹₂₂ = symbols("g¹₂₂", real = true);  g²₁₂ = 2*g¹₂₂
-    g²₂₂ = symbols("g²₂₂", real = true) 
-    h¹₁₁₁ = symbols("h¹₁₁₁", real = true)
-    h²₁₁₁ = symbols("h²₁₁₁", real = true); h¹₁₁₂ = 3*h²₁₁₁
-    h¹₁₂₂ = symbols("h¹₁₂₂", real = true); h²₁₁₂ = h¹₁₂₂
-    h¹₂₂₂ = symbols("h¹₂₂₂", real = true); h²₁₂₂ = 3*h¹₂₂₂
-    h²₂₂₂ = symbols("h²₂₂₂", real = true)
+    # Coefficients depending on the eigenfrequencies
+    ω = create_pos_vec("ω", n_osc)
+    g¹₁₁ = Sym(3)/Sym(2)*ω[1]^2
+    g²₁₁ = ω[2]^2/Sym(2);  g¹₁₂ = 2*g²₁₁;
+    g¹₂₂ = ω[1]^2/Sym(2);  g²₁₂ = 2*g¹₂₂;
+    g²₂₂ = Sym(3)/Sym(2)*ω[2]^2
+    h¹₁₁₁ = (ω[1]^2+ω[2]^2)/Sym(2)
+    h²₁₁₁ = 0; h¹₁₁₂ = 3*h²₁₁₁;
+    h¹₁₂₂ = (ω[1]^2+ω[2]^2)/Sym(2); h²₁₁₂ = h¹₁₂₂;
+    h¹₂₂₂ = 0; h²₁₂₂ = 3*h¹₂₂₂;
+    h²₂₂₂ = (ω[1]^2+ω[2]^2)/Sym(2)
     
     F[1] = - (g¹₁₁*U[1]*U[1] + g¹₁₂*U[1]*U[2] + g¹₂₂*U[2]*U[2]) - 
              (h¹₁₁₁*U[1]*R[1] + h¹₁₁₂*U[2]*R[1] + h¹₁₂₂*U[1]*R[2] + h¹₂₂₂*R[2]*U[2])
@@ -51,7 +53,7 @@ sys = define_system(n_aux, M, K, C, F_nonlin, C0, C⁺ₑₓₜ, C⁻ₑₓₜ)
 n_aut = 2                       # Number of complex coordinates in the autonomous part
 n_nonaut = 0                    # Number of complex coordinates in the nonautonomous part
 n_rom = n_aut + n_nonaut        # Number complex coordinates in the parametrisation
-o = 3                           # Order of the expansion
+o = 5                           # Order of the expansion
 
 λ₀ = create_gen_vec("λ",n_rom)  # Create a generic λ₀ vector (n_rom×1) 
 # The first n_aut entries of λ₀ represent the master eigenvalues that will be chosen later
@@ -94,7 +96,16 @@ reduced_dynamics_substitutions!(DP, substitutions)
 nonlinear_mappings_substitutions!(DP, substitutions)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#                                         Realification                                          #
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+omega, xi = backbone_CNF(DP, aexp)
+amplitude = physical_amplitudes_CNF(DP, aexp)
+cartesian_realification!(DP, aexp)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #                                           Printing                                             #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 reduced_dynamics_latex_output(DP, aexp, output_path)
 nonlinear_mappings_latex_output(DP, aexp, output_path)
+backbone_output(omega, output_path)
+physical_amplitudes_output(amplitude, output_path)

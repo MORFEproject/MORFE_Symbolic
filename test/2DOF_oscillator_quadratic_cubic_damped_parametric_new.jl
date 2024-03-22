@@ -3,7 +3,7 @@ using LinearAlgebra
 push!(LOAD_PATH,joinpath(pwd(),"src"))
 using MORFE_Symbolic
 
-output_path = "./test/2DOF_oscillator_quadratic_cubic_conservative_unforced"
+output_path = "./test/2DOF_oscillator_quadratic_cubic_damped_parametric"
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #                                System of equations definition                                  #
@@ -13,26 +13,18 @@ n_osc = 2                   # Number of oscillator equations
 n_aux = 2                   # Number of auxiliary variables for quadratic recast
 n_full = 2*n_osc + n_aux    # Number of variables on the full recast system
 
-M, K, C = define_second_order_matrices(n_osc, mass = "unitary", stiffness = "diagonal", damping = nothing)
+M, K, C = define_second_order_matrices(n_osc, mass = "unitary", stiffness = "diagonal", damping = "diagonal")
+C[1,1] = C[1,1]/sqrt(K[1,1]) 
+K[1,1] = Sym(1)
 
 function F_nonlin(U,R,n_aux)
     F = sympy.zeros(n_osc,1)[:,1]
 
-    # Symmetry conditions
-    g¹₁₁ = symbols("g¹₁₁", real = true)
-    g²₁₁ = symbols("g²₁₁", real = true);  g¹₁₂ = 2*g²₁₁
-    g¹₂₂ = symbols("g¹₂₂", real = true);  g²₁₂ = 2*g¹₂₂
-    g²₂₂ = symbols("g²₂₂", real = true) 
-    h¹₁₁₁ = symbols("h¹₁₁₁", real = true)
-    h²₁₁₁ = symbols("h²₁₁₁", real = true); h¹₁₁₂ = 3*h²₁₁₁
-    h¹₁₂₂ = symbols("h¹₁₂₂", real = true); h²₁₁₂ = h¹₁₂₂
-    h¹₂₂₂ = symbols("h¹₂₂₂", real = true); h²₁₂₂ = 3*h¹₂₂₂
-    h²₂₂₂ = symbols("h²₂₂₂", real = true)
+    g = symbols("g", real = true)
+    h = symbols("h", real = true)
     
-    F[1] = - (g¹₁₁*U[1]*U[1] + g¹₁₂*U[1]*U[2] + g¹₂₂*U[2]*U[2]) - 
-             (h¹₁₁₁*U[1]*R[1] + h¹₁₁₂*U[2]*R[1] + h¹₁₂₂*U[1]*R[2] + h¹₂₂₂*R[2]*U[2])
-    F[2] = - (g²₁₁*U[1]*U[1] + g²₁₂*U[1]*U[2] + g²₂₂*U[2]*U[2]) -
-             (h²₁₁₁*U[1]*R[1] + h²₁₁₂*U[2]*R[1] + h²₁₂₂*U[1]*R[2] + h²₂₂₂*R[2]*U[2])
+    F[1] = - (2*g*U[1]*U[2] - h*U[1]*R[1])
+    F[2] = - (g*U[1]*U[1])
     return F
 end
 
@@ -41,6 +33,9 @@ C0 = sympy.zeros(n_full,1)[:,1]
 # Define time-dependent RHS vectors
 C⁺ₑₓₜ = sympy.zeros(n_full,1)[:,1]
 C⁻ₑₓₜ = sympy.zeros(n_full,1)[:,1]
+# To have a κ*cosin(Ωt) excitation on U₂
+C⁺ₑₓₜ[n_osc+2] = 1/Sym(2)*symbols("κ",positive=true)
+C⁻ₑₓₜ[n_osc+2] = 1/Sym(2)*symbols("κ",positive=true)
 
 sys = define_system(n_aux, M, K, C, F_nonlin, C0, C⁺ₑₓₜ, C⁻ₑₓₜ)
 
@@ -49,7 +44,7 @@ sys = define_system(n_aux, M, K, C, F_nonlin, C0, C⁺ₑₓₜ, C⁻ₑₓₜ)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
 n_aut = 2                       # Number of complex coordinates in the autonomous part
-n_nonaut = 0                    # Number of complex coordinates in the nonautonomous part
+n_nonaut = 2                    # Number of complex coordinates in the nonautonomous part
 n_rom = n_aut + n_nonaut        # Number complex coordinates in the parametrisation
 o = 3                           # Order of the expansion
 
@@ -58,8 +53,8 @@ o = 3                           # Order of the expansion
 # remember to keep the same order here and there.Which means that if here two consecutive 
 # entries represent a pair, also later they must the last n_nonaut entries of λ₀ represent ±imΩ.
 
-conditions = [λ₀[2] =>-λ₀[1]]   # Resonance conditions
-style = "CNF"                   # Parametrisation style
+conditions = [λ₀[2] =>-λ₀[1],λ₀[3] =>-λ₀[4],λ₀[3] =>2*λ₀[1]]   # Resonance conditions
+style = "CNF"                                                  # Parametrisation style
 output_path *= "_" * style * "_output.txt"
 
 DP, aexp = define_parametrisation(λ₀,n_rom,n_full,n_aut,n_osc,o,style,conditions)
@@ -70,8 +65,10 @@ DP, aexp = define_parametrisation(λ₀,n_rom,n_full,n_aut,n_osc,o,style,conditi
 
 compute_order_0_parametrisation!(DP, aexp, sys)
 
-eigenvalues_order = n_aux+2:-1:n_aux+1       # Ordering of the master eigenvalues
-compute_order_1_parametrisation!(DP, aexp, sys, eigenvalues_order)
+eigenvalues_order = n_aux+4:-1:n_aux+3       # Ordering of the master eigenvalues
+# Column vector containing the symbolic expressions of the nonautonomous eigenvalues
+nonautonomous_eigenvalues = [2*im;-2*im]
+compute_order_1_parametrisation!(DP, aexp, sys, eigenvalues_order, nonautonomous_eigenvalues)
 
 for p = 2:o
     compute_order_p_parametrisation!(DP, aexp, sys, p)
@@ -80,21 +77,7 @@ end
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #                                      Mathematica output                                        #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-# In this example Julia's simplification capabilities already give good outputs, the reason why 
-# the next sections remain. However, to get the most simplified expressions, Mathematica is needed.
+# In this example Julia's simplification capabilities can't get to the most compact form of the 
+# equations. In such way, the substitutions are done in Mathematica.
 Mathematica_output(DP, aexp, output_path[1:end-11], "Output_Mathematica",
                     print_reduced_dynamics = true, print_nonlinear_mappings = true)
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-#                                         Substitutions                                          #
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-substitutions = []
-substitutions!(DP, substitutions)
-reduced_dynamics_substitutions!(DP, substitutions)
-nonlinear_mappings_substitutions!(DP, substitutions)
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-#                                           Printing                                             #
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-reduced_dynamics_latex_output(DP, aexp, output_path)
-nonlinear_mappings_latex_output(DP, aexp, output_path)

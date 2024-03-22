@@ -8,7 +8,6 @@ matcont/
 Tests avec Mathematica/
 MATLAB/
 Latex_test.jl
-test/Duffing_cubic_damped_forced_CNF
 test/Duffing_cubic_damped_unforced_CNF_test
 Test_Mathematica_printing.nb
 output/param_Duffing_cubic_damped_CNF_primary_o_5.mat

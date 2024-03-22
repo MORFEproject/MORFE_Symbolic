@@ -61,7 +61,7 @@ M = diagm(sympy.ones(n_osc,1)[:,1])
 #
 # or simply define a diagonal matrix with entries ωⱼ^2:
 n_osc = size(M)[1]
-ω = symbols("ωd", real = true, positive = true)
+ω = symbols("ω", real = true, positive = true)
 #
 # if nonconservative
 # 
@@ -73,8 +73,8 @@ n_osc = size(M)[1]
 # generic diagonal damping:
 ξ = symbols("ξ", real = true, positive = true)
 ζ = symbols("ζ", real = true, positive = true)
-C = diagm([Sym(2)*ζ])
-K = diagm([ω^2+ζ^2])
+C = diagm([2*ξ*ω])
+K = diagm([ω^2])
 # for the sake of readability, it is useful to specify that each oscillator is underdamped
 # which means that the quantity   δⱼ := √(1-ξⱼ^2) is positive
 # definition of δ = √(1-ξ.^2) will be used later for simplification
@@ -155,8 +155,8 @@ C⁻ₑₓₜ[n_osc+1] = 1/Sym(2)*symbols("κ",positive=true)
 # the function extract_Quad extracts the sparse tensor Q
 # from the user defined function RHS_Quad
 # the structure sys contains: sys.A, sys.B, sys.C0, sys.Q, sys.C⁺ₑₓₜ, sys.C⁻ₑₓₜ
-sys = system_struct(extract_Lin(   LHS_Lin,    n_full),
-                            extract_Lin(   RHS_Lin,    n_full),
+sys = system_struct(extract_Lin(   RHS_Lin,    n_full),
+                            extract_Lin(   LHS_Lin,    n_full),
                             extract_Quad(RHS_Quad,n_full),
                             C0,C⁺ₑₓₜ,C⁻ₑₓₜ)
 
@@ -227,7 +227,7 @@ DP = init_parametrisation_struct(n_full,n_rom,aexp.n_sets,n_aut,n_osc,o)
 # let us assume that the rom is an unforced oscillator 
 # then the conditions of near resonances should be written as:
 # conditions = [λ₀[2] =>-λ₀[1]]
-conditions = [λ₀[2] =>-λ₀[1],λ₀[4] =>-λ₀[3],λ₀[3] =>λ₀[1]]
+conditions = [λ₀[2] =>-λ₀[1],λ₀[4] =>-λ₀[3],3*λ₀[3] =>λ₀[1]]
 
 σ₀ = transpose(aexp.mat)*λ₀
 
@@ -410,7 +410,7 @@ end
 if n_nonaut>0
     # augment λ with eigenvalues of the nonautonomous part:
     # λ = [λ;im*symbols("Ω",positive=true);-im*symbols("Ω",positive=true)]
-    λ = [λ;im*ω;-im*ω]
+    λ = [λ;im*ω/3;-im*ω/3]
     λ = reshape(λ,1,n_rom)
     # assign the eigenvalues of the nonautonomous part to f:
     DP.f[n_aut+1,aexp.get(aexp.get([p1 n_aut+1]))] = λ[n_aut+1]
@@ -467,7 +467,7 @@ end
 # substitutions = [[Dict(h => h_val) for i=1:n_osc], [Dict(ξ[i] => xi_val) for i=1:n_osc], [Dict(δ[i] => sqrt(1-xi_val^2)) for i=1:n_osc], [Dict(ω[i] => omega_val) for i=1:n_osc], [Dict(symbols("Ω",positive=true) => omega_val/3.0) for i=1:n_osc],[Dict(symbols("κ",positive=true) => kappa_val) for i=1:n_osc]]
 
 substitutions = [[Dict(sqrt(ξ[i]^2 - 1)=>im*δ[i]) for i=1:n_osc], [Dict(2*ξ[i]^3 - 2*ξ[i] =>-2*ξ[i]δ[i]^2) for i=1:n_osc]]
-Mathematica_output(DP, aexp, "./test/Duffing_cubic_damped_forced_CNF/Primary", "Output_Mathematica",
+Mathematica_output(DP, aexp, "./test/Duffing_cubic_damped_forced_CNF/Superharmonic", "Output_Mathematica",
                     print_reduced_dynamics = true, print_nonlinear_mappings = true)
 # substitutions!(DP, substitutions)
 # reduced_dynamics_substitutions!(DP, substitutions)

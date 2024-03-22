@@ -48,7 +48,7 @@ o = 3                           # Order of the expansion
 # entries represent a pair, also later they must the last n_nonaut entries of λ₀ represent ±imΩ.
 
 conditions = [λ₀[2] =>-λ₀[1],λ₀[4] =>-λ₀[3]]   # Resonance conditions
-resonance = "Primary"                          # Either: Out-of-resonace, Primary, Superharmonic, Subharmonic
+resonance = "Primary"                          # Either: Out of resonace, Primary, Superharmonic, Subharmonic
 if resonance == "Primary"
     push!(conditions, λ₀[3] => λ₀[1])
 elseif resonance == "Superharmonic"
@@ -70,8 +70,8 @@ compute_order_0_parametrisation!(DP, aexp, sys)
 
 eigenvalues_order = n_aux+2:-1:n_aux+1       # Ordering of the master eigenvalues
 # Column vector containing the symbolic expressions of the nonautonomous eigenvalues
-ω₁ = symbols("ω₁",positive = true)
-if resonance == "Out-of-resonance"
+ω₁ = symbols("ω_1",positive = true)
+if resonance == "Out of resonance"
     nonautonomous_eigenvalues = [im*symbols("Ω",positive=true);-im*symbols("Ω",positive=true)]
 elseif resonance == "Primary"
     nonautonomous_eigenvalues = [im*ω₁;-im*ω₁]
