@@ -246,28 +246,6 @@ function nonlinear_mappings_latex_output(DP::parametrisation_struct, aexp::multi
     println("Nonlinear mappings printed\n")
 end
 
-# function polar_realifed_reduced_dynamics_output(real, imaginary, output_file = nothing; file_mode::String = "a")
-#     println("Printing polar realified reduced dynamics")
-    
-#     latex_output = "\\begin{align}"
-#     latex_output *= "\n\\dot{\\rho} &= " * latexify(real, cdot = false, safescripts = true)[2:end-1] * "\\\\"
-#     latex_output *= "\n\\rho \\dot{\\theta} &= " * latexify(imaginary, cdot = false, safescripts = true)[2:end-1] * "\\\\"
-#     latex_output = replace(latex_output, "z1" => "z_{1}")
-#     latex_output = replace(latex_output, "z2" => "z_{2}")
-#     latex_output = latex_output[1:end-2] * "\n\\end{align}\n"
-    
-#     if output_file === nothing
-#         println("Polar realified reduced dynamics:")
-#         println(latex_output)
-#     else
-#         open(output_file, file_mode) do file
-#             write(file, "Polar realified reduced dynamics:\n")
-#             write(file, latex_output)
-#         end 
-#     end
-#     println("Polar realified reduced dynamics printed")
-# end
-
 """
 Function to output the backbone obtained by polar realification. Only to be used when the problem
 is parametrised by a single master mode. Input arguments are:\\
@@ -378,15 +356,6 @@ function physical_amplitudes_output(ampli_rho, output_file = nothing; file_mode:
     latex_output *= "\\\\"
     latex_output = replace(latex_output, "I" => "\\mathit{i}")
     latex_output = latex_output[1:end-2] * "\n\\end{align}\n"
-
-    # latex_output *= "\nu_{max} = "
-    # for i in eachindex(ampli_rho)
-    #     if ampli_rho[i] != 0
-    #         latex_output *= latexify(ampli_rho[i], cdot = false, safescripts = true)[2:end-1] * " + "
-    #     end
-    # end
-    # latex_output = replace(latex_output, "I" => "\\mathit{i}")
-    # latex_output = latex_output[1:end-2] * "\n\\end{equation}\n"
 
     if output_file === nothing
         println("Physical amplitudes:")

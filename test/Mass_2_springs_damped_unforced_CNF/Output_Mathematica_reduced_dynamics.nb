@@ -1,6 +1,0 @@
-fres = ConstantArray[0, naut];
-For[ivar = 1, ivar <= naut, ivar++,
-   For[iset = 1, iset <= nsets, iset++,
-       fres[[ivar]] += f[[ivar, iset]]*monoms[[iset]];
-   ];
-];

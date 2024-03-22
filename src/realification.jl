@@ -1,57 +1,6 @@
 using SymPy
 
 """
-Function to perform polar realification of the reduced dynamics. Limited to systems parametrised
-by a single master mode and with forcing such that a single harmonic is present. Takes as input
-arguments:
-    - DP: The parametrisation data structure.\\ 
-    - aexp: A multiexponent_struct defining the numbering of the monoms in the parametrisation.\\
-COMPLETAR E TESTAR !!!!! 
-"""
-function polar_realification(DP::parametrisation_struct,aexp::multiexponent_struct)
-    get_re_im = sympy.core.expr.Expr.as_real_imag
-    trigsimp = sympy.core.expr.Expr.trigsimp
-    collect = sympy.core.expr.Expr.collect
-
-    t1 = time_ns()
-    println("Polar realification started")
-
-    θ = symbols("θ", real=true); ρ = symbols("ρ", real=true); Ω = symbols("Ω", real=true)
-    real = 0; imaginary = 0
-
-    z = [ρ/2*exp(im*θ), ρ/2*exp(-im*θ)]
-    if DP.n_aut != DP.n_rom
-        append!(z,[exp(im*Ω)/2, exp(-im*Ω)/2])
-    end
-
-    for i_ord in 1:length(DP.f[1,:])
-        term = DP.f[1,i_ord]*prod(z .^ aexp.mat[:,i_ord])/exp(im*θ)
-        term = get_re_im(term.expand(complex = true))
-        real += simplify(trigsimp(term[1]))
-        imaginary += simplify(trigsimp(term[2]))
-    end
-    real_parts = collect(expand(2*real),(sin(Ω-θ),cos(Ω-θ)), evaluate = false)
-    imaginary_parts = collect(expand(2*imaginary),(sin(Ω-θ),cos(Ω-θ)), evaluate = false)
-
-    real = 0; imaginary = 0;
-    for key in keys(real_parts)
-        real = sympy.Add(real, simplify(real_parts[key])*key, evaluate=False)
-    end
-    for key in keys(imaginary_parts)
-        imaginary = sympy.Add(imaginary, simplify(imaginary_parts[key])*key, evaluate=False)
-    end
-    real = sympy.apart(real, ρ)
-    imaginary = sympy.apart(imaginary, ρ)
-
-    t2 = time_ns()
-    println("Polar realification ended")
-    println("Elapsed time: $((t2-t1)/1.0e9) s")
-    println("")
-
-    return real, imaginary
-end
-
-"""
 Function to perform cartesian realification of the reduced dynamics. Takes as input
 arguments:
     - DP: The parametrisation data structure.\\ 
