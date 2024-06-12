@@ -135,7 +135,7 @@ function compute_order_1_parametrisation!(DP, aexp, sys, eigenvalues_order, nona
     # Right eigenvalues normalisation
     for i = 1:size(yR)[2]
         for j = 1:size(yR)[1]
-            if abs(yR[j,i]) > 10^-3 * norm(yR[:,i])
+            if abs(yR[j,i]) > 0
                 yR[:,i] = yR[:,i]/(yR[j,i])
                 break
             end
