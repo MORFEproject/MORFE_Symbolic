@@ -1,7 +1,7 @@
 # MORFE2.0
 
 This repo implements the method and examples from:
-* A. de F. Stabile, A. Vizzaccaro, C. Touze'. Normal form analysis of nonlinear oscillator equations with automated arbitrary order expansions (2025)
+* A. de F. Stabile, A. Vizzaccaro, C. Touzé. Normal form analysis of nonlinear oscillator equations with automated arbitrary order expansions (2025)
 
 
 
